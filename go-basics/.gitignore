@@ -1,0 +1,22 @@
+# Binaries
+/bin/
+/bin
+
+# Build output
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Vendor
+/vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
