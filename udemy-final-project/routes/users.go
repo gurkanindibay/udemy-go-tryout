@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/gurkanindibay/udemy-rest-api/models"
+	"log"
 )
 
 
@@ -26,12 +27,17 @@ func loginUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	storedUser, err := models.GetUserByEmail(user.Email)
+
+	//log email and password
+	log.Printf("Attempting login for user: %s", user.Email)
+	log.Printf("User password: %s", user.Password)
+
+	verifiedUser, err := models.VerifyUserCredentials(user.Email, user.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if storedUser == nil || storedUser.Password != user.Password {
+	if verifiedUser == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid email or password"})
 		return
 	}
