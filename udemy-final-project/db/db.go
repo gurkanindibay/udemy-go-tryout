@@ -33,6 +33,7 @@ func GetDB() *sql.DB {
 
 func createTables() {
 	createEventsTable()
+	createUsersTable()
 }
 
 func createEventsTable() {
@@ -43,10 +44,24 @@ func createEventsTable() {
 		description TEXT NOT NULL,
 		location TEXT NOT NULL,
 		date_time TEXT NOT NULL,
-		user_id INTEGER NOT NULL
+		user_id INTEGER NOT NULL,
+		FOREIGN KEY (user_id) REFERENCES users (id)
 	);
 	`
 	if _, err := db.Exec(query); err != nil {
 		panic("Failed to create events table: " + err.Error())
+	}
+}
+
+func createUsersTable() {
+	query := `
+	CREATE TABLE IF NOT EXISTS users (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		email TEXT NOT NULL,
+		password TEXT NOT NULL
+	);
+	`
+	if _, err := db.Exec(query); err != nil {
+		panic("Failed to create users table: " + err.Error())
 	}
 }
