@@ -2,9 +2,9 @@ POST http://localhost:8080/events
 Content-Type: application/json
 
 {
-  "name": "Sample Event",
-  "description": "This is a sample event",
-  "location": "Sample Location",
+  "name": "Sample Event3",
+  "description": "This is a sample event3",
+  "location": "Sample Location3",
   "date_time": "2023-10-10T10:00:00Z",
   "user_id": 1
 }

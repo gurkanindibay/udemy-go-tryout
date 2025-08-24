@@ -79,3 +79,66 @@ func GetAllEvents() ([]Event, error) {
 
 	return events, nil
 }
+
+func GetEventByID(id string) (*Event, error) {
+	query := `
+		SELECT id, name, description, location, date_time, user_id
+		FROM events
+		WHERE id = ?
+	`
+	db := db.GetDB()
+
+	row := db.QueryRow(query, id)
+
+	var e Event
+	var dateTimeStr string
+	if err := row.Scan(&e.ID, &e.Name, &e.Description, &e.Location, &dateTimeStr, &e.UserId); err != nil {
+		return nil, err
+	}
+
+	// Parse the datetime string back to time.Time
+	parsedTime, err := time.Parse(time.RFC3339, dateTimeStr)
+	if err != nil {
+		return nil, err
+	}
+	e.DateTime = parsedTime
+
+	return &e, nil
+}
+
+func (e *Event) Update() error {
+	// update in database
+	query := `
+		UPDATE events
+		SET name = ?, description = ?, location = ?, date_time = ?, user_id = ?
+		WHERE id = ?
+	`
+	db := db.GetDB()
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.Name, e.Description, e.Location, e.DateTime.Format(time.RFC3339), e.UserId, e.ID)
+	return err
+}
+
+func DeleteEvent(id string) error {
+	// delete from database
+	query := `
+		DELETE FROM events
+		WHERE id = ?
+	`
+	db := db.GetDB()
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	return err
+}

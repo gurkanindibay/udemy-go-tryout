@@ -1,0 +1,11 @@
+PUT http://localhost:8080/events/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "Sample Event2",
+  "description": "This is a sample event2",
+  "location": "Sample Location3",
+  "date_time": "2023-11-10T10:00:00Z",
+  "user_id": 1
+}
