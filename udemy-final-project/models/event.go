@@ -149,3 +149,75 @@ func DeleteEvent(id string) error {
 	_, err = stmt.Exec(id)
 	return err
 }
+
+func (e Event) Register(userId int64) error {
+	// save to database
+	query := `
+		INSERT INTO registrations (user_id, event_id)
+		VALUES (?, ?)
+	`
+	db := db.GetDB()
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(userId, e.ID)
+	return err
+}
+
+func (e Event) CancelEventRegistration(userId int64, eventId string) error {
+	// delete from database
+	query := `
+		DELETE FROM registrations
+		WHERE user_id = ? AND event_id = ?
+	`
+	db := db.GetDB()
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(userId, eventId)
+	return err
+}
+
+func GetRegistrationsByUserID(userId int64) ([]Event, error) {
+	query := `
+		SELECT e.id, e.name, e.description, e.location, e.date_time, e.user_id
+		FROM events e
+		JOIN registrations r ON e.id = r.event_id
+		WHERE r.user_id = ?
+	`
+	db := db.GetDB()
+
+	rows, err := db.Query(query, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var events []Event
+	for rows.Next() {
+		var e Event
+		var dateTimeStr string
+		if err := rows.Scan(&e.ID, &e.Name, &e.Description, &e.Location, &dateTimeStr, &e.UserId); err != nil {
+			panic("Failed to scan event: " + err.Error())
+		}
+
+		// Parse the datetime string back to time.Time
+		parsedTime, err := time.Parse(time.RFC3339, dateTimeStr)
+		if err != nil {
+			panic("Failed to parse datetime: " + err.Error())
+		}
+		e.DateTime = parsedTime
+
+		events = append(events, e)
+	}
+
+	return events, nil
+}

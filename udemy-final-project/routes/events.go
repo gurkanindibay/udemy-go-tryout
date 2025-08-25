@@ -103,3 +103,4 @@ func deleteEvent(c *gin.Context) {
 	}
 	c.JSON(http.StatusNoContent, nil)
 }
+
