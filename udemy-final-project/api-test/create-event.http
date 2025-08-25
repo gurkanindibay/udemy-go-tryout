@@ -1,10 +1,11 @@
 POST http://localhost:8080/events
 Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJleHAiOjE3NTYxMDc2NTUsInVzZXJJZCI6MX0.oBdMyEr6qKF0csC3iSUObPhU3zpMxTDlCPkFWjgH0EU
 
 {
-  "name": "Sample Event3",
-  "description": "This is a sample event3",
-  "location": "Sample Location3",
+  "name": "Sample Event34",
+  "description": "This is a sample event34",
+  "location": "Sample Location34",
   "date_time": "2023-10-10T10:00:00Z",
   "user_id": 1
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gurkanindibay/udemy-rest-api/models"
+	"github.com/gurkanindibay/udemy-rest-api/utils"
 )
 
 func getEvents(c *gin.Context) {
@@ -28,6 +29,20 @@ func getEventByID(c *gin.Context) {
 }
 
 func createEvent(c *gin.Context) {
+
+	// validate JWT token
+	tokenString := c.GetHeader("Authorization")
+	if tokenString == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+		return
+	}
+
+	_, err := utils.ValidateToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+
 	var newEvent models.Event
 	if err := c.ShouldBindJSON(&newEvent); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
