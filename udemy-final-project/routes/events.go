@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gurkanindibay/udemy-rest-api/models"
-	"github.com/gurkanindibay/udemy-rest-api/utils"
 )
 
 func getEvents(c *gin.Context) {
@@ -30,21 +29,8 @@ func getEventByID(c *gin.Context) {
 
 func createEvent(c *gin.Context) {
 
-	// validate JWT token
-	tokenString := c.GetHeader("Authorization")
-	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
-		return
-	}
+	userId:= c.GetInt64("userId")
 
-	userId, err := utils.ValidateToken(tokenString)
-
-	
-
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-		return
-	}
 
 	var newEvent models.Event
 	if err := c.ShouldBindJSON(&newEvent); err != nil {
@@ -62,6 +48,20 @@ func createEvent(c *gin.Context) {
 
 func updateEvent(c *gin.Context) {
 	id := c.Param("id")
+	userId:= c.GetInt64("userId")
+
+	// Check if the event exists and belongs to the user
+	event, err := models.GetEventByID(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if event.UserId != userId {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You do not have permission to update this event"})
+		return
+	}
+
+	// Bind the updated event data
 	var updatedEvent models.Event
 	if err := c.ShouldBindJSON(&updatedEvent); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -83,6 +83,20 @@ func updateEvent(c *gin.Context) {
 
 func deleteEvent(c *gin.Context) {
 	id := c.Param("id")
+
+	userId:= c.GetInt64("userId")
+
+	// Check if the event exists and belongs to the user
+	event, err := models.GetEventByID(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if event.UserId != userId {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You do not have permission to delete this event"})
+		return
+	}
+
 	if err := models.DeleteEvent(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
