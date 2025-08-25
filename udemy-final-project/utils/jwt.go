@@ -19,12 +19,16 @@ func GenerateToken(email string, userId int64) (string, error) {
 	return token.SignedString(jwtKey)
 }
 
-func ValidateToken(tokenString string) (*jwt.Token, error) {
-	// Implementation for validating JWT token
-	return jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
+func ValidateToken(tokenString string) (int64, error) {
+	// Implementation for validating JWT token and returning user ID
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
 		}
 		return jwtKey, nil
 	})
+	if err != nil {
+		return 0, err
+	}
+	return int64(token.Claims.(jwt.MapClaims)["userId"].(float64)), nil
 }

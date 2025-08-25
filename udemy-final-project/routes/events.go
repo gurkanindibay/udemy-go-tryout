@@ -37,7 +37,10 @@ func createEvent(c *gin.Context) {
 		return
 	}
 
-	_, err := utils.ValidateToken(tokenString)
+	userId, err := utils.ValidateToken(tokenString)
+
+	
+
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
@@ -49,7 +52,7 @@ func createEvent(c *gin.Context) {
 		return
 	}
 	newEvent.ID = 1
-	newEvent.UserId = 1 // later: get from auth context
+	newEvent.UserId = userId
 	if err := newEvent.Save(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -12,7 +12,14 @@ type Event struct {
 	Description string    `json:"description" binding:"required"`
 	Location    string    `json:"location" binding:"required"`
 	DateTime    time.Time `json:"date_time" binding:"required"`
-	UserId      int64     `json:"user_id"`
+	UserId      int64     `json:"user_id,omitempty"`
+}
+
+type CreateEventRequest struct {
+	Name        string    `json:"name" binding:"required"`
+	Description string    `json:"description" binding:"required"`
+	Location    string    `json:"location" binding:"required"`
+	DateTime    time.Time `json:"date_time" binding:"required"`
 }
 
 var events = []Event{}
