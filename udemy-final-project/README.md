@@ -1,6 +1,6 @@
-# Udemy Go Final Project - Event Management REST API
+# Udemy Go Final Project - Event Management API (REST + gRPC)
 
-A RESTful API built with Go and Gin framework for managing events, user authentication, and event registrations.
+A comprehensive event management system built with Go that provides both RESTful API and gRPC services for managing events, user authentication, and event registrations.
 
 ## Overview
 
@@ -19,15 +19,18 @@ The API uses SQLite as the database, JWT for authentication, and follows RESTful
 - **Event Registration**: Users can register for events and view their registrations
 - **Authentication**: JWT-based authentication for protected routes
 - **Database**: SQLite database with proper schema and relationships
+- **Dual API Support**: Both RESTful HTTP API and gRPC services
 - **RESTful API**: Clean REST endpoints following standard conventions
 
 ## Technology Stack
 
 - **Language**: Go 1.25.0
-- **Web Framework**: Gin
+- **Web Framework**: Gin (for REST API)
+- **RPC Framework**: gRPC (for gRPC services)
 - **Database**: SQLite (modernc.org/sqlite driver)
 - **Authentication**: JWT (golang-jwt/jwt/v5)
 - **Password Hashing**: bcrypt (golang.org/x/crypto)
+- **Protocol Buffers**: For gRPC service definitions
 - **JSON**: Standard library with Gin bindings
 
 ## Prerequisites
@@ -104,6 +107,44 @@ The database file `events.db` is created automatically when the application star
 - `POST /events/:id/register` - Register for an event
 - `DELETE /events/:id/register` - Cancel event registration
 - `GET /users/:id/registrations` - Get user's event registrations
+
+## gRPC Services
+
+The application also provides gRPC services running on port `50051`. The gRPC services mirror the functionality of the REST API but use Protocol Buffers for efficient communication.
+
+### gRPC Services Available
+
+#### AuthService
+- `Register(RegisterRequest) returns (RegisterResponse)` - Register a new user
+- `Login(LoginRequest) returns (LoginResponse)` - Authenticate user and return JWT token
+
+#### EventService
+- `GetEvents(GetEventsRequest) returns (GetEventsResponse)` - Get all events
+- `GetEvent(GetEventRequest) returns (GetEventResponse)` - Get event by ID
+- `CreateEvent(CreateEventRequest) returns (CreateEventResponse)` - Create a new event
+- `UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse)` - Update an existing event
+- `DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse)` - Delete an event
+- `RegisterForEvent(RegisterForEventRequest) returns (RegisterForEventResponse)` - Register for an event
+- `CancelRegistration(CancelRegistrationRequest) returns (CancelRegistrationResponse)` - Cancel event registration
+- `GetUserRegistrations(GetUserRegistrationsRequest) returns (GetUserRegistrationsResponse)` - Get user's registrations
+
+### gRPC Client Example
+
+A sample gRPC client is provided in `client/grpc_client.go`. To run it:
+
+```bash
+go run client/grpc_client.go
+```
+
+### Protocol Buffer Definitions
+
+The gRPC services are defined in:
+- `proto/auth.proto` - Authentication service
+- `proto/event.proto` - Event management service
+
+Generated Go code is in:
+- `proto/auth/` - Auth service generated code
+- `proto/event/` - Event service generated code
 
 ## Request/Response Examples
 
@@ -262,22 +303,35 @@ udemy-final-project/
 │   ├── delete-event.http
 │   ├── delete-register.http
 │   ├── get-events-by-id.http
+│   ├── get-events-by-id.http
 │   ├── get-events.http
 │   ├── login.http
 │   ├── register.http
 │   └── update-event.http
+├── client/
+│   └── grpc_client.go     # Sample gRPC client
 ├── db/
 │   └── db.go              # Database initialization and connection
+├── grpc/
+│   ├── auth/
+│   │   └── server.go      # gRPC auth service implementation
+│   └── event/
+│       └── server.go      # gRPC event service implementation
 ├── middlewares/
 │   └── auth.go            # JWT authentication middleware
 ├── models/
 │   ├── event.go           # Event model and database operations
 │   └── user.go            # User model and authentication
+├── proto/
+│   ├── auth.proto         # Auth service protobuf definition
+│   ├── event.proto        # Event service protobuf definition
+│   ├── auth/              # Generated auth protobuf code
+│   └── event/             # Generated event protobuf code
 ├── routes/
-│   ├── events.go          # Event-related routes
-│   ├── registers.go       # Registration-related routes
-│   ├── routes.go          # Main route setup
-│   └── users.go           # User-related routes
+│   ├── events.go          # Event-related REST routes
+│   ├── registers.go       # Registration-related REST routes
+│   ├── routes.go          # Main REST route setup
+│   └── users.go           # User-related REST routes
 └── utils/
     ├── hash.go            # Password hashing utilities
     └── jwt.go             # JWT token utilities
