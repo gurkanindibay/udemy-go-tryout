@@ -374,7 +374,109 @@ Response:
 
 ## Testing
 
-### Using HTTP Test Files
+### Automated Testing
+
+The project includes comprehensive automated tests that can be run locally or in CI/CD pipelines.
+
+#### Local Testing
+
+**Prerequisites:**
+- Docker and Docker Compose
+- Go 1.25+
+- curl and jq
+
+**Run all tests:**
+```bash
+# Start the application
+docker-compose up -d --build
+
+# Wait for services to be ready (about 30 seconds)
+sleep 30
+
+# Run the test script
+./test.sh
+```
+
+**Run specific tests:**
+```bash
+# Run Go unit tests only
+go test ./... -v
+
+# Run integration tests only
+API_BASE_URL=http://localhost:8080 ./test.sh
+```
+
+#### Test Scripts
+
+- **`test.sh`** - Main test script (Linux/Mac)
+- **`test.bat`** - Windows test script
+- **`models/models_test.go`** - Go unit tests
+
+#### Test Coverage
+
+The automated tests cover:
+
+**Unit Tests:**
+- User model operations (save, retrieve, authenticate)
+- Event model operations (CRUD operations)
+- Database interactions with prepared statements
+
+**Integration Tests:**
+- REST API endpoints (11 comprehensive tests)
+- User registration and authentication flow
+- Event CRUD operations
+- Event registration system
+- JWT token validation
+
+**API Endpoints Tested:**
+1. User Registration
+2. User Login
+3. Get Events (empty list)
+4. Create Event
+5. Get Events (with data)
+6. Get Event by ID
+7. Update Event
+8. Register for Event
+9. Get User Registrations
+10. Cancel Registration
+11. Delete Event
+
+### CI/CD Pipeline
+
+The project uses GitHub Actions for automated testing and deployment:
+
+#### Pipeline Stages:
+
+1. **Test Stage**
+   - Runs Go unit tests
+   - PostgreSQL service for testing
+   - Code quality checks
+
+2. **Build Stage**
+   - Builds Docker image
+   - Pushes to GitHub Container Registry
+   - Multi-platform support
+
+3. **Integration Test Stage**
+   - Runs full integration tests
+   - Tests Docker image in containerized environment
+   - Comprehensive API testing
+
+#### Pipeline Triggers:
+- Push to `main` or `develop` branches
+- Pull requests to `main` branch
+
+#### Environment Variables:
+```env
+API_BASE_URL=http://localhost:8080
+GRPC_HOST=localhost:50051
+TEST_USER_EMAIL=ci-test@example.com
+TEST_USER_PASSWORD=ci-test-password
+```
+
+### Manual Testing
+
+#### Using HTTP Test Files
 
 The project includes pre-configured `.http` files in the `api-test/` directory for testing all endpoints. You can use these with VS Code's REST Client extension or similar tools.
 
@@ -389,7 +491,7 @@ Available test files:
 - `register.http` - Register for event
 - `delete-register.http` - Cancel registration
 
-### Manual Testing with curl
+#### Manual Testing with curl
 
 1. **Register a user**:
    ```bash
@@ -414,7 +516,7 @@ Available test files:
        "name": "Test Event",
        "description": "A test event",
        "location": "Test Location",
-       "date_time": "2023-10-10T10:00:00Z"
+       "date_time": "2025-12-25T10:00:00Z"
      }'
    ```
 
@@ -423,7 +525,8 @@ Available test files:
 1. Always register/login first to get a JWT token
 2. Include the JWT token in the Authorization header for protected routes
 3. Use tools like Postman, Insomnia, or VS Code REST Client for easier testing
-4. Check the database file `events.db` to verify data persistence
+4. Check the database to verify data persistence
+5. Run tests in a clean environment (fresh database)
 
 ## API Documentation
 

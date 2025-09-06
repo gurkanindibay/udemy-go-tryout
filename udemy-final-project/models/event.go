@@ -24,7 +24,7 @@ type CreateEventRequest struct {
 
 var events = []Event{}
 
-func (e Event) Save() error {
+func (e *Event) Save() error {
 	db := db.GetDB()
 
 	// Use prepared statement
@@ -42,7 +42,7 @@ func (e Event) Save() error {
 		return err
 	}
 
-	events = append(events, e)
+	events = append(events, *e)
 	return nil
 }
 
