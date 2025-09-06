@@ -144,7 +144,7 @@ jobs:
 
     - name: Start application with Docker Compose
       run: |
-        docker-compose up -d --build
+        docker compose up -d --build
         sleep 30  # Wait for services to be ready
       working-directory: udemy-final-project
 
@@ -183,12 +183,12 @@ jobs:
 
     - name: Show application logs
       if: always()
-      run: docker-compose logs
+      run: docker compose logs
       working-directory: udemy-final-project
 
     - name: Clean up
       if: always()
       run: |
-        docker-compose down -v --remove-orphans
+        docker compose down -v --remove-orphans
         docker system prune -f
       working-directory: udemy-final-project
