@@ -1,15 +1,14 @@
 package models
 
 import (
-	"database/sql"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/gurkanindibay/udemy-rest-api/db"
-	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 func TestUser_Save(t *testing.T) {
@@ -166,7 +165,7 @@ func TestGetEventByID(t *testing.T) {
 }
 
 // Helper function to setup test database
-func setupTestDB(t *testing.T) *sql.DB {
+func setupTestDB(t *testing.T) *gorm.DB {
 	// Initialize database connection if not already done
 	if db.GetDB() == nil {
 		db.InitDB()
@@ -184,19 +183,19 @@ func cleanupTestData(t *testing.T) {
 
 	// Delete test data in correct order to respect foreign key constraints
 	// 1. Delete registrations first (no dependencies)
-	_, err := testDB.Exec("DELETE FROM registrations WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'test%')")
+	err := testDB.Exec("DELETE FROM registrations WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'test%')").Error
 	if err != nil {
 		t.Logf("Warning: Failed to clean up registrations: %v", err)
 	}
 
 	// 2. Delete events (depends on users)
-	_, err = testDB.Exec("DELETE FROM events WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'test%')")
+	err = testDB.Exec("DELETE FROM events WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'test%')").Error
 	if err != nil {
 		t.Logf("Warning: Failed to clean up events: %v", err)
 	}
 
 	// 3. Delete users last (after events are deleted)
-	_, err = testDB.Exec("DELETE FROM users WHERE email LIKE 'test%'")
+	err = testDB.Exec("DELETE FROM users WHERE email LIKE 'test%'").Error
 	if err != nil {
 		t.Logf("Warning: Failed to clean up users: %v", err)
 	}

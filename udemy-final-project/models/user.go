@@ -1,17 +1,17 @@
 package models
 
 import (
-	"database/sql"
 	"log"
 
 	"github.com/gurkanindibay/udemy-rest-api/db"
 	"github.com/gurkanindibay/udemy-rest-api/utils"
+	"gorm.io/gorm"
 )
 
 type User struct {
-	ID       int64  `json:"id" example:"1"`
-	Email    string `json:"email" binding:"required,email" example:"user@example.com"`
-	Password string `json:"password" binding:"required,min=6" example:"password123"`
+	ID       int64  `json:"id" gorm:"primaryKey" example:"1"`
+	Email    string `json:"email" gorm:"unique;not null" binding:"required,email" example:"user@example.com"`
+	Password string `json:"password" gorm:"not null" binding:"required,min=6" example:"password123"`
 }
 
 func (u *User) Save() error {
@@ -29,49 +29,26 @@ func (u *User) Save() error {
 
 	log.Printf("Hashed password: %s", hashedPassword)
 
-	// Use prepared statement for extra security
-	stmt, err := db.Prepare(`
-		INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id
-	`)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
+	u.Password = hashedPassword
 
-	err = stmt.QueryRow(u.Email, hashedPassword).Scan(&u.ID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return db.Create(u).Error
 }
 
 func GetUserByEmail(email string) (*User, error) {
 	db := db.GetDB()
 
-	// Use prepared statement
-	stmt, err := db.Prepare(`
-		SELECT id, email, password FROM users WHERE email = $1
-	`)
+	var user User
+	err := db.Where("email = ?", email).First(&user).Error
 	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-
-	row := stmt.QueryRow(email)
-
-	var u User
-	if err := row.Scan(&u.ID, &u.Email, &u.Password); err != nil {
-		if err == sql.ErrNoRows {
+		if err == gorm.ErrRecordNotFound {
 			return nil, nil // User not found
 		}
 		return nil, err
 	}
-	return &u, nil
+	return &user, nil
 }
 
 func VerifyUserCredentials(email, password string) (*User, error) {
-
 	user, err := GetUserByEmail(email)
 	if err != nil {
 		return nil, err
