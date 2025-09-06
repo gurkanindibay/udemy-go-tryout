@@ -7,19 +7,19 @@ import (
 )
 
 type Event struct {
-	ID          int64     `json:"id"`
-	Name        string    `json:"name" binding:"required"`
-	Description string    `json:"description" binding:"required"`
-	Location    string    `json:"location" binding:"required"`
-	DateTime    time.Time `json:"date_time" binding:"required"`
-	UserId      int64     `json:"user_id,omitempty"`
+	ID          int64     `json:"id" example:"1"`
+	Name        string    `json:"name" binding:"required" example:"Sample Event"`
+	Description string    `json:"description" binding:"required" example:"This is a sample event"`
+	Location    string    `json:"location" binding:"required" example:"Sample Location"`
+	DateTime    time.Time `json:"date_time" binding:"required" example:"2023-10-10T10:00:00Z"`
+	UserId      int64     `json:"user_id,omitempty" example:"1"`
 }
 
 type CreateEventRequest struct {
-	Name        string    `json:"name" binding:"required"`
-	Description string    `json:"description" binding:"required"`
-	Location    string    `json:"location" binding:"required"`
-	DateTime    time.Time `json:"date_time" binding:"required"`
+	Name        string    `json:"name" binding:"required" example:"Sample Event"`
+	Description string    `json:"description" binding:"required" example:"This is a sample event"`
+	Location    string    `json:"location" binding:"required" example:"Sample Location"`
+	DateTime    time.Time `json:"date_time" binding:"required" example:"2023-10-10T10:00:00Z"`
 }
 
 var events = []Event{}

@@ -8,6 +8,14 @@ import (
 	"github.com/gurkanindibay/udemy-rest-api/models"
 )
 
+// getEvents godoc
+// @Summary Get all events
+// @Description Retrieve a list of all events
+// @Tags events
+// @Produce json
+// @Success 200 {array} models.Event
+// @Failure 500 {object} map[string]string
+// @Router /events [get]
 func getEvents(c *gin.Context) {
 	events, err := models.GetAllEvents()
 	if err != nil {
@@ -17,6 +25,15 @@ func getEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, events)
 }
 
+// getEventByID godoc
+// @Summary Get event by ID
+// @Description Retrieve a specific event by its ID
+// @Tags events
+// @Produce json
+// @Param id path int true "Event ID"
+// @Success 200 {object} models.Event
+// @Failure 500 {object} map[string]string
+// @Router /events/{id} [get]
 func getEventByID(c *gin.Context) {
 	id := c.Param("id")
 	event, err := models.GetEventByID(id)
@@ -27,6 +44,19 @@ func getEventByID(c *gin.Context) {
 	c.JSON(http.StatusOK, event)
 }
 
+// createEvent godoc
+// @Summary Create a new event
+// @Description Create a new event (requires authentication)
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer token"
+// @Param event body models.CreateEventRequest true "Event data"
+// @Success 201 {object} models.Event
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /events [post]
+// @Security BearerAuth
 func createEvent(c *gin.Context) {
 
 	userId:= c.GetInt64("userId")
@@ -46,6 +76,21 @@ func createEvent(c *gin.Context) {
 	c.JSON(http.StatusCreated, newEvent)
 }
 
+// updateEvent godoc
+// @Summary Update an event
+// @Description Update an existing event (requires authentication and ownership)
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer token"
+// @Param id path int true "Event ID"
+// @Param event body models.CreateEventRequest true "Updated event data"
+// @Success 200 {object} models.Event
+// @Failure 400 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /events/{id} [put]
+// @Security BearerAuth
 func updateEvent(c *gin.Context) {
 	id := c.Param("id")
 	userId:= c.GetInt64("userId")
@@ -81,6 +126,18 @@ func updateEvent(c *gin.Context) {
 	c.JSON(http.StatusOK, updatedEvent)
 }
 
+// deleteEvent godoc
+// @Summary Delete an event
+// @Description Delete an existing event (requires authentication and ownership)
+// @Tags events
+// @Produce json
+// @Param Authorization header string true "Bearer token"
+// @Param id path int true "Event ID"
+// @Success 204
+// @Failure 403 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /events/{id} [delete]
+// @Security BearerAuth
 func deleteEvent(c *gin.Context) {
 	id := c.Param("id")
 

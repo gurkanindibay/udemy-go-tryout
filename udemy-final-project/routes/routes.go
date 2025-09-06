@@ -3,9 +3,14 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gurkanindibay/udemy-rest-api/middlewares"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	swaggerFiles "github.com/swaggo/files"
 )
 
 func SetupRoutes(server *gin.Engine) {
+	// Swagger UI route
+	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// Public routes (no authentication required)
 	server.GET("/events", getEvents)
 	server.GET("/events/:id", getEventByID)
