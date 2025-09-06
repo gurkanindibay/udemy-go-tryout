@@ -15,6 +15,11 @@ func Authenticate(context *gin.Context) {
 		return
 	}
 
+	// Remove "Bearer " prefix if present
+	if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+		tokenString = tokenString[7:]
+	}
+
 	userId, err := utils.ValidateToken(tokenString)
 
 	if err != nil {
