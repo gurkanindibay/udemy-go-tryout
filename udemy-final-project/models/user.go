@@ -15,10 +15,7 @@ type User struct {
 
 func (u *User) Save() error {
 	db := db.GetDB()
-	query := `
-	INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id;
-	`
-	
+
 	// Log the email and password
 	log.Printf("Attempting to register user: %s", u.Email)
 	log.Printf("User password: %s", u.Password)
@@ -31,7 +28,16 @@ func (u *User) Save() error {
 
 	log.Printf("Hashed password: %s", hashedPassword)
 
-	err = db.QueryRow(query, u.Email, hashedPassword).Scan(&u.ID)
+	// Use prepared statement for extra security
+	stmt, err := db.Prepare(`
+		INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id
+	`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(u.Email, hashedPassword).Scan(&u.ID)
 	if err != nil {
 		return err
 	}
@@ -41,10 +47,17 @@ func (u *User) Save() error {
 
 func GetUserByEmail(email string) (*User, error) {
 	db := db.GetDB()
-	query := `
-	SELECT id, email, password FROM users WHERE email = $1;
-	`
-	row := db.QueryRow(query, email)
+
+	// Use prepared statement
+	stmt, err := db.Prepare(`
+		SELECT id, email, password FROM users WHERE email = $1
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRow(email)
 
 	var u User
 	if err := row.Scan(&u.ID, &u.Email, &u.Password); err != nil {
