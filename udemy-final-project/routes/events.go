@@ -17,7 +17,7 @@ import (
 // @Failure 500 {object} map[string]string
 // @Router /events [get]
 func getEvents(c *gin.Context) {
-	events, err := models.GetAllEvents()
+	events, err := eventService.GetAllEvents()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -36,7 +36,7 @@ func getEvents(c *gin.Context) {
 // @Router /events/{id} [get]
 func getEventByID(c *gin.Context) {
 	id := c.Param("id")
-	event, err := models.GetEventByID(id)
+	event, err := eventService.GetEventByID(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -68,11 +68,13 @@ func createEvent(c *gin.Context) {
 	}
 	newEvent.ID = 1
 	newEvent.UserId = userId
-	if err := newEvent.Save(); err != nil {
+
+	createdEvent, err := eventService.CreateEvent(newEvent)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, newEvent)
+	c.JSON(http.StatusCreated, createdEvent)
 }
 
 // updateEvent godoc
@@ -95,7 +97,7 @@ func updateEvent(c *gin.Context) {
 	userId := c.GetInt64("userId")
 
 	// Check if the event exists and belongs to the user
-	event, err := models.GetEventByID(id)
+	event, err := eventService.GetEventByID(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -118,7 +120,7 @@ func updateEvent(c *gin.Context) {
 		return
 	}
 	updatedEvent.ID = eventID
-	if err := updatedEvent.Update(); err != nil {
+	if err := eventService.UpdateEvent(updatedEvent); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -143,7 +145,7 @@ func deleteEvent(c *gin.Context) {
 	userId := c.GetInt64("userId")
 
 	// Check if the event exists and belongs to the user
-	event, err := models.GetEventByID(id)
+	event, err := eventService.GetEventByID(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -153,7 +155,7 @@ func deleteEvent(c *gin.Context) {
 		return
 	}
 
-	if err := models.DeleteEvent(id); err != nil {
+	if err := eventService.DeleteEvent(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

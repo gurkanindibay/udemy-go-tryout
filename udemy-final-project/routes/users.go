@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gurkanindibay/udemy-rest-api/models"
-	"github.com/gurkanindibay/udemy-rest-api/utils"
 )
 
 // registerUser godoc
@@ -26,11 +25,12 @@ func registerUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := user.Save(); err != nil {
+	registeredUser, err := userService.Register(user.Email, user.Password)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, user)
+	c.JSON(http.StatusCreated, registeredUser)
 }
 
 // loginUser godoc
@@ -56,7 +56,7 @@ func loginUser(c *gin.Context) {
 	log.Printf("Attempting login for user: %s", user.Email)
 	log.Printf("User password: %s", user.Password)
 
-	verifiedUser, err := models.VerifyUserCredentials(user.Email, user.Password)
+	verifiedUser, err := userService.Login(user.Email, user.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -66,7 +66,7 @@ func loginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateToken(verifiedUser.Email, verifiedUser.ID)
+	token, err := authService.GenerateToken(verifiedUser.Email, verifiedUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

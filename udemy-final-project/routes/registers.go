@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gurkanindibay/udemy-rest-api/models"
 )
 
 // registerForEvent godoc
@@ -24,7 +23,7 @@ func registerForEvent(c *gin.Context) {
 	eventId := c.Param("id")
 	userId := c.GetInt64("userId")
 
-	event, err := models.GetEventByID(eventId)
+	event, err := eventService.GetEventByID(eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -34,7 +33,7 @@ func registerForEvent(c *gin.Context) {
 		return
 	}
 
-	if err := event.Register(userId); err != nil {
+	if err := eventService.RegisterForEvent(userId, eventId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -61,7 +60,7 @@ func getUserRegistrations(c *gin.Context) {
 		return
 	}
 
-	registrations, err := models.GetRegistrationsByUserID(userId)
+	registrations, err := eventService.GetUserRegistrations(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -85,7 +84,7 @@ func cancelRegistration(c *gin.Context) {
 	eventId := c.Param("id")
 	userId := c.GetInt64("userId")
 
-	event, err := models.GetEventByID(eventId)
+	event, err := eventService.GetEventByID(eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -95,7 +94,7 @@ func cancelRegistration(c *gin.Context) {
 		return
 	}
 
-	if err := event.CancelEventRegistration(userId, eventId); err != nil {
+	if err := eventService.CancelRegistration(userId, eventId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

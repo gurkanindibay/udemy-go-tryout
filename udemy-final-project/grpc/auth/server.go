@@ -5,22 +5,26 @@ import (
 	"errors"
 	"log"
 
-	"github.com/gurkanindibay/udemy-rest-api/models"
 	authpb "github.com/gurkanindibay/udemy-rest-api/proto/auth"
-	"github.com/gurkanindibay/udemy-rest-api/utils"
+	"github.com/gurkanindibay/udemy-rest-api/services"
 )
 
 type AuthServer struct {
 	authpb.UnimplementedAuthServiceServer
+	userService services.UserService
+	authService services.AuthService
+}
+
+func NewAuthServer(userService services.UserService, authService services.AuthService) *AuthServer {
+	return &AuthServer{
+		userService: userService,
+		authService: authService,
+	}
 }
 
 func (s *AuthServer) Register(ctx context.Context, req *authpb.RegisterRequest) (*authpb.RegisterResponse, error) {
-	user := models.User{
-		Email:    req.Email,
-		Password: req.Password,
-	}
-
-	if err := user.Save(); err != nil {
+	user, err := s.userService.Register(req.Email, req.Password)
+	if err != nil {
 		log.Printf("Failed to register user: %v", err)
 		return nil, err
 	}
@@ -36,7 +40,7 @@ func (s *AuthServer) Register(ctx context.Context, req *authpb.RegisterRequest) 
 func (s *AuthServer) Login(ctx context.Context, req *authpb.LoginRequest) (*authpb.LoginResponse, error) {
 	log.Printf("Attempting login for user: %s", req.Email)
 
-	verifiedUser, err := models.VerifyUserCredentials(req.Email, req.Password)
+	verifiedUser, err := s.userService.Login(req.Email, req.Password)
 	if err != nil {
 		log.Printf("Failed to verify user credentials: %v", err)
 		return nil, err
@@ -45,7 +49,7 @@ func (s *AuthServer) Login(ctx context.Context, req *authpb.LoginRequest) (*auth
 		return nil, errors.New("invalid email or password")
 	}
 
-	token, err := utils.GenerateToken(verifiedUser.Email, verifiedUser.ID)
+	token, err := s.authService.GenerateToken(verifiedUser.Email, verifiedUser.ID)
 	if err != nil {
 		log.Printf("Failed to generate token: %v", err)
 		return nil, err

@@ -31,7 +31,90 @@ The API uses SQLite as the database, JWT for authentication, and follows RESTful
 - **Authentication**: JWT (golang-jwt/jwt/v5)
 - **Password Hashing**: bcrypt (golang.org/x/crypto)
 - **Protocol Buffers**: For gRPC service definitions
+- **Dependency Injection**: samber/do (for service management)
 - **JSON**: Standard library with Gin bindings
+
+## Dependency Injection
+
+This project implements Dependency Injection (DI) using the `samber/do` library to manage service dependencies and improve code maintainability, testability, and decoupling.
+
+### Why Dependency Injection?
+
+- **Testability**: Services can be easily mocked for unit testing
+- **Maintainability**: Changes to service implementations don't affect dependent code
+- **Decoupling**: Components are loosely coupled and follow the Dependency Inversion Principle
+- **Flexibility**: Easy to swap implementations or add new features
+
+### How DI is Implemented
+
+#### 1. Service Interfaces
+All business logic is abstracted behind interfaces defined in `services/interfaces.go`:
+- `UserService` - User management operations
+- `EventService` - Event management operations
+- `AuthService` - Authentication operations
+
+#### 2. Service Implementations
+Concrete implementations are provided in `services/implementations.go`:
+- `NewUserService()` - Creates user service instance
+- `NewEventService()` - Creates event service instance
+- `NewAuthService()` - Creates auth service instance
+
+#### 3. DI Container
+The DI container is set up in `di/container.go`:
+```go
+func NewContainer() *Container {
+    injector := do.New()
+
+    // Register services with named values
+    do.ProvideNamedValue(injector, "userService", services.NewUserService())
+    do.ProvideNamedValue(injector, "eventService", services.NewEventService())
+    do.ProvideNamedValue(injector, "authService", services.NewAuthService())
+
+    return &Container{Injector: injector}
+}
+```
+
+#### 4. Service Usage
+Services are injected into route handlers and gRPC servers:
+
+**REST Routes** (`routes/routes.go`):
+```go
+func SetupRoutes(router *gin.Engine, container *di.Container) {
+    // Inject services into route handlers
+    userService := container.GetUserService()
+    eventService := container.GetEventService()
+    authService := container.GetAuthService()
+    
+    // Services are available as package-level variables
+    // for use in individual route files
+}
+```
+
+**gRPC Servers** (`grpc/auth/server.go`, `grpc/event/server.go`):
+```go
+func NewAuthServer(container *di.Container) *AuthServer {
+    return &AuthServer{
+        authService: container.GetAuthService(),
+    }
+}
+```
+
+### Benefits in This Project
+
+1. **Clean Architecture**: Business logic is separated from HTTP/gRPC concerns
+2. **Easy Testing**: Services can be mocked for comprehensive unit tests
+3. **Service Sharing**: Package-level variables allow services to be shared across route files
+4. **Future Extensibility**: New services can be added without modifying existing code
+5. **Configuration Management**: Services can be configured differently for different environments
+
+### DI Container Methods
+
+The container provides getter methods for each service:
+- `GetUserService()` - Returns the user service instance
+- `GetEventService()` - Returns the event service instance
+- `GetAuthService()` - Returns the auth service instance
+
+This ensures type safety and centralized service management throughout the application.
 
 ## Prerequisites
 

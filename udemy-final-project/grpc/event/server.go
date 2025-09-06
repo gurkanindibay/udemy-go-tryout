@@ -7,11 +7,19 @@ import (
 
 	"github.com/gurkanindibay/udemy-rest-api/models"
 	eventpb "github.com/gurkanindibay/udemy-rest-api/proto/event"
+	"github.com/gurkanindibay/udemy-rest-api/services"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type EventServer struct {
 	eventpb.UnimplementedEventServiceServer
+	eventService services.EventService
+}
+
+func NewEventServer(eventService services.EventService) *EventServer {
+	return &EventServer{
+		eventService: eventService,
+	}
 }
 
 // Helper function to convert model Event to protobuf Event
@@ -39,7 +47,7 @@ func convertFromProtoEvent(pe *eventpb.Event) models.Event {
 }
 
 func (s *EventServer) GetEvents(ctx context.Context, req *eventpb.GetEventsRequest) (*eventpb.GetEventsResponse, error) {
-	events, err := models.GetAllEvents()
+	events, err := s.eventService.GetAllEvents()
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +63,7 @@ func (s *EventServer) GetEvents(ctx context.Context, req *eventpb.GetEventsReque
 }
 
 func (s *EventServer) GetEvent(ctx context.Context, req *eventpb.GetEventRequest) (*eventpb.GetEventResponse, error) {
-	event, err := models.GetEventByID(strconv.FormatInt(req.Id, 10))
+	event, err := s.eventService.GetEventByID(strconv.FormatInt(req.Id, 10))
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +85,13 @@ func (s *EventServer) CreateEvent(ctx context.Context, req *eventpb.CreateEventR
 		UserId:      userId,
 	}
 
-	if err := event.Save(); err != nil {
+	createdEvent, err := s.eventService.CreateEvent(event)
+	if err != nil {
 		return nil, err
 	}
 
 	return &eventpb.CreateEventResponse{
-		Event: convertToProtoEvent(event),
+		Event: convertToProtoEvent(*createdEvent),
 	}, nil
 }
 
@@ -91,7 +100,7 @@ func (s *EventServer) UpdateEvent(ctx context.Context, req *eventpb.UpdateEventR
 	userId := int64(1) // Placeholder - should come from auth context
 
 	// Check if the event exists and belongs to the user
-	existingEvent, err := models.GetEventByID(strconv.FormatInt(req.Id, 10))
+	existingEvent, err := s.eventService.GetEventByID(strconv.FormatInt(req.Id, 10))
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +117,7 @@ func (s *EventServer) UpdateEvent(ctx context.Context, req *eventpb.UpdateEventR
 		UserId:      userId,
 	}
 
-	if err := updatedEvent.Update(); err != nil {
+	if err := s.eventService.UpdateEvent(updatedEvent); err != nil {
 		return nil, err
 	}
 
@@ -122,7 +131,7 @@ func (s *EventServer) DeleteEvent(ctx context.Context, req *eventpb.DeleteEventR
 	userId := int64(1) // Placeholder - should come from auth context
 
 	// Check if the event exists and belongs to the user
-	event, err := models.GetEventByID(strconv.FormatInt(req.Id, 10))
+	event, err := s.eventService.GetEventByID(strconv.FormatInt(req.Id, 10))
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +139,7 @@ func (s *EventServer) DeleteEvent(ctx context.Context, req *eventpb.DeleteEventR
 		return nil, errors.New("you do not have permission to delete this event")
 	}
 
-	if err := models.DeleteEvent(strconv.FormatInt(req.Id, 10)); err != nil {
+	if err := s.eventService.DeleteEvent(strconv.FormatInt(req.Id, 10)); err != nil {
 		return nil, err
 	}
 
@@ -141,8 +150,7 @@ func (s *EventServer) RegisterForEvent(ctx context.Context, req *eventpb.Registe
 	// Get user ID from context (would need authentication middleware)
 	userId := int64(1) // Placeholder - should come from auth context
 
-	event := models.Event{ID: req.EventId}
-	if err := event.Register(userId); err != nil {
+	if err := s.eventService.RegisterForEvent(userId, strconv.FormatInt(req.EventId, 10)); err != nil {
 		return nil, err
 	}
 
@@ -153,8 +161,7 @@ func (s *EventServer) CancelRegistration(ctx context.Context, req *eventpb.Cance
 	// Get user ID from context (would need authentication middleware)
 	userId := int64(1) // Placeholder - should come from auth context
 
-	event := models.Event{ID: req.EventId}
-	if err := event.CancelEventRegistration(userId, strconv.FormatInt(req.EventId, 10)); err != nil {
+	if err := s.eventService.CancelRegistration(userId, strconv.FormatInt(req.EventId, 10)); err != nil {
 		return nil, err
 	}
 
@@ -165,7 +172,7 @@ func (s *EventServer) GetUserRegistrations(ctx context.Context, req *eventpb.Get
 	// Get user ID from context (would need authentication middleware)
 	userId := int64(1) // Placeholder - should come from auth context
 
-	events, err := models.GetRegistrationsByUserID(userId)
+	events, err := s.eventService.GetUserRegistrations(userId)
 	if err != nil {
 		return nil, err
 	}

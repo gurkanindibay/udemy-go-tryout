@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gurkanindibay/udemy-rest-api/db"
+	"github.com/gurkanindibay/udemy-rest-api/di"
 	_ "github.com/gurkanindibay/udemy-rest-api/docs" // This is required for swagger
 	"github.com/gurkanindibay/udemy-rest-api/grpc/auth"
 	"github.com/gurkanindibay/udemy-rest-api/grpc/event"
@@ -16,10 +17,17 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+var container *di.Container
+
 func main() {
 	log.Println("Initializing database...")
 	db.InitDB("events.db")
 	log.Println("Database initialized")
+
+	// Initialize DI container
+	log.Println("Initializing DI container...")
+	container = di.NewContainer()
+	log.Println("DI container initialized")
 
 	// Start gRPC server in a goroutine
 	log.Println("Starting gRPC server...")
@@ -45,6 +53,12 @@ func startRESTServer() {
 		c.Next()
 	})
 
+	// Initialize services in routes
+	userService := container.GetUserService()
+	eventService := container.GetEventService()
+	authService := container.GetAuthService()
+	routes.InitServices(userService, eventService, authService)
+
 	routes.SetupRoutes(server)
 	log.Println("REST server starting on :8080")
 	server.Run(":8080")
@@ -61,9 +75,14 @@ func startGRPCServer() {
 	grpcServer := grpc.NewServer()
 	log.Println("gRPC server created")
 
-	// Register gRPC services
-	authServer := &auth.AuthServer{}
-	eventServer := &event.EventServer{}
+	// Get services from DI container
+	userService := container.GetUserService()
+	eventService := container.GetEventService()
+	authService := container.GetAuthService()
+
+	// Create gRPC servers with DI
+	authServer := auth.NewAuthServer(userService, authService)
+	eventServer := event.NewEventServer(eventService)
 
 	authpb.RegisterAuthServiceServer(grpcServer, authServer)
 	eventpb.RegisterEventServiceServer(grpcServer, eventServer)

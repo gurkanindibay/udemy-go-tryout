@@ -3,9 +3,22 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gurkanindibay/udemy-rest-api/middlewares"
+	"github.com/gurkanindibay/udemy-rest-api/services"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+var (
+	userService  services.UserService
+	eventService services.EventService
+	authService  services.AuthService
+)
+
+func InitServices(u services.UserService, e services.EventService, a services.AuthService) {
+	userService = u
+	eventService = e
+	authService = a
+}
 
 func SetupRoutes(server *gin.Engine) {
 	// Swagger UI route
