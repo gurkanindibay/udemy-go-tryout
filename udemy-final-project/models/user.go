@@ -1,10 +1,11 @@
 package models
 
 import (
-	"github.com/gurkanindibay/udemy-rest-api/db"
-	"github.com/gurkanindibay/udemy-rest-api/utils"
 	"database/sql"
 	"log"
+
+	"github.com/gurkanindibay/udemy-rest-api/db"
+	"github.com/gurkanindibay/udemy-rest-api/utils"
 )
 
 type User struct {
@@ -66,7 +67,7 @@ func GetUserByEmail(email string) (*User, error) {
 		}
 		return nil, err
 	}
-	return &u, nil	
+	return &u, nil
 }
 
 func VerifyUserCredentials(email, password string) (*User, error) {

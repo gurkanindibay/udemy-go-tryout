@@ -171,30 +171,30 @@ func setupTestDB(t *testing.T) *sql.DB {
 	if db.GetDB() == nil {
 		db.InitDB()
 	}
-	
+
 	// Clean up test data before each test
 	cleanupTestData(t)
-	
+
 	return db.GetDB()
 }
 
 // Helper function to clean up test data
 func cleanupTestData(t *testing.T) {
 	testDB := db.GetDB()
-	
+
 	// Delete test data in correct order to respect foreign key constraints
 	// 1. Delete registrations first (no dependencies)
 	_, err := testDB.Exec("DELETE FROM registrations WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'test%')")
 	if err != nil {
 		t.Logf("Warning: Failed to clean up registrations: %v", err)
 	}
-	
+
 	// 2. Delete events (depends on users)
 	_, err = testDB.Exec("DELETE FROM events WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'test%')")
 	if err != nil {
 		t.Logf("Warning: Failed to clean up events: %v", err)
 	}
-	
+
 	// 3. Delete users last (after events are deleted)
 	_, err = testDB.Exec("DELETE FROM users WHERE email LIKE 'test%'")
 	if err != nil {

@@ -43,15 +43,17 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-go-${{ hashFiles('udemy-final-project/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
 
     - name: Install dependencies
       run: go mod download
+      working-directory: udemy-final-project
 
     - name: Run Go tests
       run: go test ./... -v
+      working-directory: udemy-final-project
       env:
         DB_HOST: localhost
         DB_PORT: 5432
@@ -61,6 +63,7 @@ jobs:
 
     - name: Build application
       run: go build -v ./...
+      working-directory: udemy-final-project
 
   build-and-test-docker:
     name: Build and Test Docker Image
@@ -95,7 +98,7 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: .
+        context: udemy-final-project
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -126,7 +129,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
+    - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.25'
@@ -134,12 +137,13 @@ jobs:
     - name: Install test dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y curl jq
+        sudo apt-get install -y curl jq netcat
 
     - name: Start application with Docker Compose
       run: |
         docker-compose up -d --build
         sleep 30  # Wait for services to be ready
+      working-directory: udemy-final-project
 
     - name: Wait for services to be healthy
       run: |
@@ -167,6 +171,7 @@ jobs:
       run: |
         chmod +x test.sh
         ./test.sh
+      working-directory: udemy-final-project
       env:
         API_BASE_URL: http://localhost:8080
         GRPC_HOST: localhost:50051
@@ -176,9 +181,11 @@ jobs:
     - name: Show application logs
       if: always()
       run: docker-compose logs
+      working-directory: udemy-final-project
 
     - name: Clean up
       if: always()
       run: |
         docker-compose down -v --remove-orphans
         docker system prune -f
+      working-directory: udemy-final-project
