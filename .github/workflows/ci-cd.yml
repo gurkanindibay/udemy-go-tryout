@@ -47,9 +47,9 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('udemy-final-project/go.sum') }}
+        key: ${{ runner.os }}-go-mod-${{ hashFiles('udemy-final-project/go.sum') }}
         restore-keys: |
-          ${{ runner.os }}-go-
+          ${{ runner.os }}-go-mod-
 
     - name: Install dependencies
       run: go mod download
@@ -125,7 +125,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
-          - 5432:5432
+          - 5433:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -145,6 +145,12 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y curl jq netcat-openbsd
+
+    - name: Clean up previous containers
+      run: |
+        docker compose down -v --remove-orphans || true
+        docker system prune -f || true
+      working-directory: udemy-final-project
 
     - name: Start application with Docker Compose
       run: |
