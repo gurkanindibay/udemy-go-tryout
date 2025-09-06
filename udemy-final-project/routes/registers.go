@@ -24,7 +24,7 @@ func registerForEvent(c *gin.Context) {
 	eventId := c.Param("id")
 	userId := c.GetInt64("userId")
 
-	event,err := models.GetEventByID(eventId)
+	event, err := models.GetEventByID(eventId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

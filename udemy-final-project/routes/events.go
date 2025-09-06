@@ -59,8 +59,7 @@ func getEventByID(c *gin.Context) {
 // @Security BearerAuth
 func createEvent(c *gin.Context) {
 
-	userId:= c.GetInt64("userId")
-
+	userId := c.GetInt64("userId")
 
 	var newEvent models.Event
 	if err := c.ShouldBindJSON(&newEvent); err != nil {
@@ -93,7 +92,7 @@ func createEvent(c *gin.Context) {
 // @Security BearerAuth
 func updateEvent(c *gin.Context) {
 	id := c.Param("id")
-	userId:= c.GetInt64("userId")
+	userId := c.GetInt64("userId")
 
 	// Check if the event exists and belongs to the user
 	event, err := models.GetEventByID(id)
@@ -141,7 +140,7 @@ func updateEvent(c *gin.Context) {
 func deleteEvent(c *gin.Context) {
 	id := c.Param("id")
 
-	userId:= c.GetInt64("userId")
+	userId := c.GetInt64("userId")
 
 	// Check if the event exists and belongs to the user
 	event, err := models.GetEventByID(id)
@@ -160,4 +159,3 @@ func deleteEvent(c *gin.Context) {
 	}
 	c.JSON(http.StatusNoContent, nil)
 }
-

@@ -1,11 +1,12 @@
 package routes
 
 import (
+	"log"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gurkanindibay/udemy-rest-api/models"
 	"github.com/gurkanindibay/udemy-rest-api/utils"
-	"log"
 )
 
 // registerUser godoc

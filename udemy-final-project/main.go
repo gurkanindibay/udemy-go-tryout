@@ -3,14 +3,14 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gurkanindibay/udemy-rest-api/db"
-	"github.com/gurkanindibay/udemy-rest-api/routes"
 	_ "github.com/gurkanindibay/udemy-rest-api/docs" // This is required for swagger
+	"github.com/gurkanindibay/udemy-rest-api/routes"
 )
 
 func main() {
 	db.InitDB("events.db")
 	server := gin.Default()
-	
+
 	// Add CORS middleware for Swagger UI
 	server.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
@@ -22,7 +22,7 @@ func main() {
 		}
 		c.Next()
 	})
-	
+
 	routes.SetupRoutes(server)
 	server.Run(":8080")
 }
@@ -51,4 +51,3 @@ func main() {
 //   in: header
 //
 // swagger:meta
-
