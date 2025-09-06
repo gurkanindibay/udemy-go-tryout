@@ -8,13 +8,13 @@ import (
 )
 
 type Event struct {
-	ID          int64     `json:"id" gorm:"primaryKey" example:"1"`
-	Name        string    `json:"name" gorm:"not null" binding:"required" example:"Sample Event"`
-	Description string    `json:"description" gorm:"not null" binding:"required" example:"This is a sample event"`
-	Location    string    `json:"location" gorm:"not null" binding:"required" example:"Sample Location"`
-	DateTime    time.Time `json:"date_time" gorm:"not null" binding:"required" example:"2023-10-10T10:00:00Z"`
-	UserId      int64     `json:"user_id,omitempty" gorm:"not null" example:"1"`
-	User        User      `gorm:"foreignKey:UserId"`
+	ID            int64          `json:"id" gorm:"primaryKey" example:"1"`
+	Name          string         `json:"name" gorm:"not null" binding:"required" example:"Sample Event"`
+	Description   string         `json:"description" gorm:"not null" binding:"required" example:"This is a sample event"`
+	Location      string         `json:"location" gorm:"not null" binding:"required" example:"Sample Location"`
+	DateTime      time.Time      `json:"date_time" gorm:"not null" binding:"required" example:"2023-10-10T10:00:00Z"`
+	UserId        int64          `json:"user_id,omitempty" gorm:"not null" example:"1"`
+	User          User           `gorm:"foreignKey:UserId"`
 	Registrations []Registration `gorm:"foreignKey:EventId"`
 }
 
