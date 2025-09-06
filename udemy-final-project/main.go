@@ -21,7 +21,7 @@ var container *di.Container
 
 func main() {
 	log.Println("Initializing database...")
-	db.InitDB("events.db")
+	db.InitDB()
 	log.Println("Database initialized")
 
 	// Initialize DI container

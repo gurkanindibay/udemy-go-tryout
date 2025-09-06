@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: event-postgres
+    environment:
+      POSTGRES_DB: eventdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - event-network
+
+  app:
+    build: .
+    container_name: event-api
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: eventdb
+    depends_on:
+      - postgres
+    networks:
+      - event-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  event-network:
+    driver: bridge

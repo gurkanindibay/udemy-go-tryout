@@ -16,46 +16,33 @@ type User struct {
 func (u *User) Save() error {
 	db := db.GetDB()
 	query := `
-	INSERT INTO users (email, password) VALUES (?, ?);
+	INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id;
 	`
-	stmt, err := db.Prepare(query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
+	
 	// Log the email and password
 	log.Printf("Attempting to register user: %s", u.Email)
 	log.Printf("User password: %s", u.Password)
 
-
 	// Hash the password before storing it
 	hashedPassword, err := utils.HashPassword(u.Password)
+	if err != nil {
+		return err
+	}
 
 	log.Printf("Hashed password: %s", hashedPassword)
 
+	err = db.QueryRow(query, u.Email, hashedPassword).Scan(&u.ID)
 	if err != nil {
 		return err
 	}
 
-	result, err := stmt.Exec(u.Email, hashedPassword)
-	if err != nil {
-		return err
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	u.ID = id
 	return nil
 }
 
 func GetUserByEmail(email string) (*User, error) {
 	db := db.GetDB()
 	query := `
-	SELECT id, email, password FROM users WHERE email = ?;
+	SELECT id, email, password FROM users WHERE email = $1;
 	`
 	row := db.QueryRow(query, email)
 

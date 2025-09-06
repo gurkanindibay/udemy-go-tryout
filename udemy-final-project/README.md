@@ -10,7 +10,7 @@ This project is a complete event management system that allows users to:
 - Register for events
 - View their event registrations
 
-The API uses SQLite as the database, JWT for authentication, and follows RESTful conventions.
+The API uses PostgreSQL as the database, JWT for authentication, and follows RESTful conventions.
 
 ## Features
 
@@ -18,7 +18,7 @@ The API uses SQLite as the database, JWT for authentication, and follows RESTful
 - **Event Management**: Full CRUD operations for events
 - **Event Registration**: Users can register for events and view their registrations
 - **Authentication**: JWT-based authentication for protected routes
-- **Database**: SQLite database with proper schema and relationships
+- **Database**: PostgreSQL database with proper schema and relationships
 - **Dual API Support**: Both RESTful HTTP API and gRPC services
 - **RESTful API**: Clean REST endpoints following standard conventions
 
@@ -27,12 +27,86 @@ The API uses SQLite as the database, JWT for authentication, and follows RESTful
 - **Language**: Go 1.25.0
 - **Web Framework**: Gin (for REST API)
 - **RPC Framework**: gRPC (for gRPC services)
-- **Database**: SQLite (modernc.org/sqlite driver)
+- **Database**: PostgreSQL (with lib/pq driver)
 - **Authentication**: JWT (golang-jwt/jwt/v5)
 - **Password Hashing**: bcrypt (golang.org/x/crypto)
 - **Protocol Buffers**: For gRPC service definitions
 - **Dependency Injection**: samber/do (for service management)
+- **Containerization**: Docker & Docker Compose
 - **JSON**: Standard library with Gin bindings
+
+## Running with Docker Compose
+
+The easiest way to run the application is using Docker Compose, which sets up both the PostgreSQL database and the Go application with a single command.
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+
+### Quick Start
+
+1. **Clone the repository** (if not already done):
+   ```bash
+   git clone https://github.com/gurkanindibay/udemy-go-tryout.git
+   cd udemy-go-tryout/udemy-final-project
+   ```
+
+2. **Start the application**:
+   ```bash
+   docker-compose up --build
+   ```
+
+That's it! The application will be running at:
+- **REST API**: http://localhost:8080
+- **gRPC Server**: localhost:50051
+- **PostgreSQL**: localhost:5432
+
+### Docker Commands
+
+```bash
+# Start services
+docker-compose up
+
+# Start services in background
+docker-compose up -d
+
+# Stop services
+docker-compose down
+
+# Rebuild and start
+docker-compose up --build
+
+# View logs
+docker-compose logs
+
+# View logs for specific service
+docker-compose logs app
+docker-compose logs postgres
+```
+
+### Environment Configuration
+
+The application uses the following environment variables (configured in docker-compose.yml):
+
+- `DB_HOST`: PostgreSQL host (postgres)
+- `DB_PORT`: PostgreSQL port (5432)
+- `DB_USER`: Database user (postgres)
+- `DB_PASSWORD`: Database password (postgres)
+- `DB_NAME`: Database name (eventdb)
+
+For local development without Docker, create a `.env` file with:
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=eventdb
+```
+
+## Manual Installation & Setup
+
+If you prefer to run without Docker:
 
 ## Dependency Injection
 
@@ -143,29 +217,30 @@ The server will start on `http://localhost:8080`
 
 ## Database
 
-The application uses SQLite with the following schema:
+The application uses PostgreSQL with the following schema:
 
 ### Tables
 
 - **users**: Stores user information
-  - `id` (INTEGER, PRIMARY KEY)
-  - `email` (TEXT, NOT NULL)
+  - `id` (SERIAL, PRIMARY KEY)
+  - `email` (TEXT, NOT NULL, UNIQUE)
   - `password` (TEXT, NOT NULL, hashed)
 
 - **events**: Stores event information
-  - `id` (INTEGER, PRIMARY KEY)
+  - `id` (SERIAL, PRIMARY KEY)
   - `name` (TEXT, NOT NULL)
   - `description` (TEXT, NOT NULL)
   - `location` (TEXT, NOT NULL)
-  - `date_time` (TEXT, NOT NULL)
+  - `date_time` (TIMESTAMP, NOT NULL)
   - `user_id` (INTEGER, FOREIGN KEY to users.id)
 
 - **registrations**: Links users to events they've registered for
-  - `id` (INTEGER, PRIMARY KEY)
+  - `id` (SERIAL, PRIMARY KEY)
   - `event_id` (INTEGER, FOREIGN KEY to events.id)
   - `user_id` (INTEGER, FOREIGN KEY to users.id)
+  - `UNIQUE(event_id, user_id)`
 
-The database file `events.db` is created automatically when the application starts.
+The PostgreSQL database is created automatically when the application starts with Docker Compose.
 
 ## API Endpoints
 
@@ -379,7 +454,9 @@ udemy-final-project/
 ├── main.go                 # Application entry point
 ├── go.mod                  # Go module dependencies
 ├── go.sum                  # Dependency checksums
-├── events.db              # SQLite database (created automatically)
+├── Dockerfile              # Docker build configuration
+├── docker-compose.yml      # Docker Compose configuration
+├── .env                    # Environment variables for local development
 ├── api-test/              # HTTP test files
 │   ├── auth-register.http
 │   ├── create-event.http
