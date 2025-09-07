@@ -35,7 +35,7 @@ func NewProducer() (*Producer, error) {
 	}, nil
 }
 
-func (p *Producer) PublishEvent(action string, event interface{}) error {
+func (p *Producer) PublishEvent(action string, eventID string, event interface{}) error {
 	message := EventMessage{
 		Action: action,
 		Event:  event,
@@ -46,9 +46,11 @@ func (p *Producer) PublishEvent(action string, event interface{}) error {
 		return err
 	}
 
+	key := action + "-" + eventID  // Combine action and eventID for partitioning
+
 	err = p.writer.WriteMessages(context.Background(),
 		kafka.Message{
-			Key:   []byte(action),
+			Key:   []byte(key),
 			Value: jsonMessage,
 		},
 	)
@@ -57,7 +59,7 @@ func (p *Producer) PublishEvent(action string, event interface{}) error {
 		return err
 	}
 
-	log.Printf("Published event to Kafka: %s", action)
+	log.Printf("Published event to Kafka: %s for event ID %s", action, eventID)
 	return nil
 }
 

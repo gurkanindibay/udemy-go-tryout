@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/gurkanindibay/udemy-rest-api/kafka"
 	"github.com/gurkanindibay/udemy-rest-api/models"
@@ -62,7 +63,7 @@ func (s *eventServiceImpl) CreateEvent(event models.Event) (*models.Event, error
 	}
 	// Publish to Kafka
 	if s.producer != nil {
-		go s.producer.PublishEvent("created", event)
+		go s.producer.PublishEvent("created", strconv.FormatInt(event.ID, 10), event)
 	}
 	return &event, nil
 }
@@ -70,7 +71,7 @@ func (s *eventServiceImpl) CreateEvent(event models.Event) (*models.Event, error
 func (s *eventServiceImpl) UpdateEvent(event models.Event) error {
 	err := event.Update()
 	if err == nil && s.producer != nil {
-		go s.producer.PublishEvent("updated", event)
+		go s.producer.PublishEvent("updated", strconv.FormatInt(event.ID, 10), event)
 	}
 	return err
 }
@@ -85,7 +86,7 @@ func (s *eventServiceImpl) DeleteEvent(id string) error {
 	}
 	err = models.DeleteEvent(id)
 	if err == nil && s.producer != nil {
-		go s.producer.PublishEvent("deleted", *event)
+		go s.producer.PublishEvent("deleted", strconv.FormatInt(event.ID, 10), *event)
 	}
 	return err
 }
