@@ -120,7 +120,7 @@ jobs:
       run: go mod download
 
     - name: Run gosec
-      uses: securego/gosec-action@v2
+      uses: securego/gosec@master
       with:
         args: './...'
 
