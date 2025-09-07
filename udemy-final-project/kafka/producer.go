@@ -46,7 +46,7 @@ func (p *Producer) PublishEvent(action string, eventID string, event interface{}
 		return err
 	}
 
-	key := action + "-" + eventID  // Combine action and eventID for partitioning
+	key := action + "-" + eventID // Combine action and eventID for partitioning
 
 	err = p.writer.WriteMessages(context.Background(),
 		kafka.Message{

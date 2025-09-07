@@ -34,7 +34,7 @@ func (s *userServiceImpl) Login(email, password string) (*models.User, error) {
 }
 
 // eventServiceImpl implements EventService
-type eventServiceImpl struct{
+type eventServiceImpl struct {
 	producer *kafka.Producer
 }
 
