@@ -124,7 +124,7 @@ jobs:
     - name: Run gosec (excluding auto-generated files)
       uses: securego/gosec@v2.21.4
       with:
-        args: '-exclude-dir=proto/auth -exclude-dir=proto/event ./...'
+        args: '-exclude-dir=proto/auth -exclude-dir=proto/event .'
 
     - name: Install govulncheck
       run: go install golang.org/x/vuln/cmd/govulncheck@latest
