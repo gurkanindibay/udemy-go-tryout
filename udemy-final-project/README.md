@@ -46,6 +46,7 @@ This project includes Apache Kafka integration for event-driven messaging, enabl
 - **Event Consumption**: Consumer service that processes Kafka messages for logging, notifications, or analytics
 - **Asynchronous Processing**: Non-blocking message publishing using goroutines
 - **Fault Tolerance**: Graceful handling when Kafka is unavailable
+- **KRaft Mode**: Uses Kafka's built-in consensus protocol (no Zookeeper required)
 
 ### Kafka Architecture
 
@@ -55,7 +56,7 @@ This project includes Apache Kafka integration for event-driven messaging, enabl
 - Actions: `created`, `updated`, `deleted`
 
 #### Consumer
-- Consumes messages from the `events` topic
+- Consumes messages from the `events` topic using consumer group `event-consumer-group`
 - Processes messages asynchronously
 - Currently logs events (can be extended for notifications, analytics, etc.)
 
@@ -76,21 +77,45 @@ This project includes Apache Kafka integration for event-driven messaging, enabl
 
 ### Running with Kafka
 
-The Docker Compose setup includes Kafka and Zookeeper services:
+The Docker Compose setup includes Kafka in KRaft mode:
 
 ```bash
 # Start all services including Kafka
 docker-compose up --build
 
 # Services will be available at:
-# - Kafka: localhost:9092
-# - Zookeeper: localhost:2181
+# - Kafka: localhost:9092 (KRaft mode - no Zookeeper needed)
 ```
 
 ### Kafka Configuration
 
+This setup uses **KRaft mode** (Kafka Raft Metadata mode), which eliminates the need for Zookeeper by using Kafka's built-in consensus protocol for metadata management.
+
+**Key KRaft Configuration:**
+- `KAFKA_NODE_ID`: Unique identifier for this Kafka node
+- `KAFKA_PROCESS_ROLES`: Roles this node performs (broker,controller)
+- `KAFKA_CONTROLLER_QUORUM_VOTERS`: Controller quorum configuration
+- `CLUSTER_ID`: Unique identifier for the Kafka cluster
+
 Environment variables for Kafka (configured in docker-compose.yml):
 - `KAFKA_BROKERS`: Kafka broker addresses (kafka:29092 for Docker)
+
+### Testing Kafka Integration
+
+The Kafka integration has been thoroughly tested and verified:
+
+✅ **Event Creation**: Messages published and consumed successfully
+✅ **Event Updates**: Update operations trigger Kafka messages
+✅ **Event Deletion**: Delete operations publish to Kafka
+✅ **KRaft Mode**: Running without Zookeeper dependency
+✅ **Consumer Groups**: Proper message consumption with group coordination
+✅ **Fault Tolerance**: Graceful handling when Kafka is unavailable
+
+**Test Results:**
+- All CRUD operations successfully publish to Kafka
+- Consumer receives and processes all messages
+- Message format includes complete event data
+- Asynchronous processing works without blocking API responses
 
 ### Extending Kafka Usage
 
