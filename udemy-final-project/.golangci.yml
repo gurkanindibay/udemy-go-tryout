@@ -1,4 +1,4 @@
-version: 2
+version: "2"
 
 run:
   timeout: 5m
@@ -7,7 +7,7 @@ run:
 
 linters:
   enable:
-    - revive  # replaces golint
+    - revive
     - govet
     - ineffassign
     - staticcheck
@@ -20,29 +20,3 @@ formatters:
   enable:
     - gofmt
     - goimports
-
-linters-settings:
-  revive:
-    min-confidence: 0.8
-    rules:
-      - name: exported
-        disabled: false
-      - name: package-comments
-        disabled: true  # Allow packages without comments
-      - name: var-naming
-        disabled: true  # Disable var-naming rule that flags "utils" as meaningless
-
-issues:
-  exclude-rules:
-    # Exclude stuttering warnings for gRPC server types
-    - path: grpc/
-      linters:
-        - revive
-      text: "stutters"
-    # Exclude all revive warnings from utils directory (package naming convention)
-    - path: utils/
-      linters:
-        - revive
-  # Exclude generated protobuf files
-  exclude-files:
-    - ".*\\.pb\\.go$"
