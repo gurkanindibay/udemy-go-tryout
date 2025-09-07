@@ -8,7 +8,7 @@ import (
 )
 
 type Event struct {
-	ID            int64          `json:"id" gorm:"primaryKey" example:"1"`
+	ID            int64          `json:"id" gorm:"primaryKey;autoIncrement" example:"1"`
 	Name          string         `json:"name" gorm:"not null" binding:"required" example:"Sample Event"`
 	Description   string         `json:"description" gorm:"not null" binding:"required" example:"This is a sample event"`
 	Location      string         `json:"location" gorm:"not null" binding:"required" example:"Sample Location"`
@@ -19,7 +19,7 @@ type Event struct {
 }
 
 type Registration struct {
-	ID      int64 `gorm:"primaryKey"`
+	ID      int64 `gorm:"primaryKey;autoIncrement"`
 	UserId  int64 `gorm:"not null"`
 	EventId int64 `gorm:"not null"`
 	User    User  `gorm:"foreignKey:UserId;constraint:OnDelete:SET NULL" json:"-"`

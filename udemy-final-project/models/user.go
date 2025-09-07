@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	ID       int64  `json:"id" gorm:"primaryKey" example:"1"`
+	ID       int64  `json:"id" gorm:"primaryKey;autoIncrement" example:"1"`
 	Email    string `json:"email" gorm:"unique;not null" binding:"required,email" example:"user@example.com"`
 	Password string `json:"password" gorm:"not null" binding:"required,min=6" example:"password123"`
 }

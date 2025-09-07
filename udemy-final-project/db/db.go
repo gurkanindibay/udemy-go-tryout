@@ -11,14 +11,14 @@ import (
 
 // User model for migration
 type User struct {
-	ID       int64  `gorm:"primaryKey"`
+	ID       int64  `gorm:"primaryKey;autoIncrement"`
 	Email    string `gorm:"unique;not null"`
 	Password string `gorm:"not null"`
 }
 
 // Event model for migration
 type Event struct {
-	ID          int64     `gorm:"primaryKey"`
+	ID          int64     `gorm:"primaryKey;autoIncrement"`
 	Name        string    `gorm:"not null"`
 	Description string    `gorm:"not null"`
 	Location    string    `gorm:"not null"`
@@ -28,7 +28,7 @@ type Event struct {
 
 // Registration model for migration
 type Registration struct {
-	ID      int64 `gorm:"primaryKey"`
+	ID      int64 `gorm:"primaryKey;autoIncrement"`
 	UserId  int64 `gorm:"not null"`
 	EventId int64 `gorm:"not null"`
 }

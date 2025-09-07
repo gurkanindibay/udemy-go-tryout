@@ -66,7 +66,6 @@ func createEvent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	newEvent.ID = 1
 	newEvent.UserId = userId
 
 	createdEvent, err := eventService.CreateEvent(newEvent)
