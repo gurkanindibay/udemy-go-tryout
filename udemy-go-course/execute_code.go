@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/gurkanindibay/udemy-course/closures"
-	"github.com/gurkanindibay/udemy-course/functions"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-go-course/closures"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-go-course/functions"
 )
 
-//import "github.com/gurkanindibay/udemy-course/collections"
+//import "github.com/gurkanindibay/udemy-go-tryout/udemy-go-course/collections"
 
 func main() {
 	//pointer_test();

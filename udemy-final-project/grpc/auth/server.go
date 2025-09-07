@@ -1,3 +1,4 @@
+// Package auth provides gRPC authentication service implementation.
 package auth
 
 import (
@@ -5,24 +6,27 @@ import (
 	"errors"
 	"log"
 
-	authpb "github.com/gurkanindibay/udemy-rest-api/proto/auth"
-	"github.com/gurkanindibay/udemy-rest-api/services"
+	authpb "github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/proto/auth"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/services"
 )
 
-type AuthServer struct {
+// Server implements the gRPC AuthService server
+type Server struct {
 	authpb.UnimplementedAuthServiceServer
 	userService services.UserService
 	authService services.AuthService
 }
 
-func NewAuthServer(userService services.UserService, authService services.AuthService) *AuthServer {
-	return &AuthServer{
+// NewAuthServer creates a new AuthServer instance
+func NewAuthServer(userService services.UserService, authService services.AuthService) *Server {
+	return &Server{
 		userService: userService,
 		authService: authService,
 	}
 }
 
-func (s *AuthServer) Register(ctx context.Context, req *authpb.RegisterRequest) (*authpb.RegisterResponse, error) {
+// Register handles user registration via gRPC
+func (s *Server) Register(_ context.Context, req *authpb.RegisterRequest) (*authpb.RegisterResponse, error) {
 	user, err := s.userService.Register(req.Email, req.Password)
 	if err != nil {
 		log.Printf("Failed to register user: %v", err)
@@ -37,7 +41,8 @@ func (s *AuthServer) Register(ctx context.Context, req *authpb.RegisterRequest) 
 	}, nil
 }
 
-func (s *AuthServer) Login(ctx context.Context, req *authpb.LoginRequest) (*authpb.LoginResponse, error) {
+// Login handles user authentication via gRPC
+func (s *Server) Login(_ context.Context, req *authpb.LoginRequest) (*authpb.LoginResponse, error) {
 	log.Printf("Attempting login for user: %s", req.Email)
 
 	verifiedUser, err := s.userService.Login(req.Email, req.Password)

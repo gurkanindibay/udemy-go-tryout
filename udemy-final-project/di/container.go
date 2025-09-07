@@ -1,7 +1,8 @@
+// Package di provides dependency injection container functionality.
 package di
 
 import (
-	"github.com/gurkanindibay/udemy-rest-api/services"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/services"
 	"github.com/samber/do/v2"
 )
 

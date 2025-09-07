@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gurkanindibay/udemy-rest-api/db"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/db"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -87,7 +87,7 @@ func TestEvent_Save(t *testing.T) {
 		Description: "Test Description",
 		Location:    "Test Location",
 		DateTime:    time.Now().Add(24 * time.Hour), // Future date
-		UserId:      testUser.ID,
+		UserID:      testUser.ID,
 	}
 
 	// Test Save method
@@ -114,7 +114,7 @@ func TestGetAllEvents(t *testing.T) {
 		Description: "Test Description",
 		Location:    "Test Location",
 		DateTime:    time.Now().Add(24 * time.Hour),
-		UserId:      testUser.ID,
+		UserID:      testUser.ID,
 	}
 	err = event.Save()
 	require.NoError(t, err)
@@ -152,7 +152,7 @@ func TestGetEventByID(t *testing.T) {
 		Description: "Test Description",
 		Location:    "Test Location",
 		DateTime:    time.Now().Add(24 * time.Hour),
-		UserId:      testUser.ID,
+		UserID:      testUser.ID,
 	}
 	err = event.Save()
 	require.NoError(t, err)

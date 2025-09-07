@@ -1,12 +1,14 @@
+// Package middlewares provides HTTP middleware functions for authentication and other common functionality.
 package middlewares
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gurkanindibay/udemy-rest-api/utils"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/security"
 )
 
+// Authenticate is a middleware that validates JWT tokens and sets user ID in context
 func Authenticate(context *gin.Context) {
 	// validate JWT token
 	tokenString := context.GetHeader("Authorization")
@@ -20,14 +22,14 @@ func Authenticate(context *gin.Context) {
 		tokenString = tokenString[7:]
 	}
 
-	userId, err := utils.ValidateToken(tokenString)
+	userID, err := security.ValidateToken(tokenString)
 
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
 	}
 
-	context.Set("userId", userId)
+	context.Set("userId", userID)
 	context.Next()
 
 }

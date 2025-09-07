@@ -24,16 +24,138 @@ The API uses PostgreSQL as the database, JWT for authentication, and follows RES
 
 ## Technology Stack
 
-- **Language**: Go 1.25.0
+- **Language**: Go 1.25
 - **Web Framework**: Gin (for REST API)
 - **RPC Framework**: gRPC (for gRPC services)
-- **Database**: PostgreSQL (with lib/pq driver)
+- **Database**: PostgreSQL (with GORM and pgx driver)
 - **Authentication**: JWT (golang-jwt/jwt/v5)
 - **Password Hashing**: bcrypt (golang.org/x/crypto)
 - **Protocol Buffers**: For gRPC service definitions
-- **Dependency Injection**: samber/do (for service management)
+- **ORM**: GORM (gorm.io/gorm) for database operations
+- **Dependency Injection**: samber/do/v2 (for service management)
+- **Testing**: Testify (github.com/stretchr/testify) for unit tests
 - **Containerization**: Docker & Docker Compose
 - **JSON**: Standard library with Gin bindings
+- **Message Queue**: Apache Kafka (segmentio/kafka-go) for event-driven architecture
+
+## Kafka Integration
+
+This project includes Apache Kafka integration for event-driven messaging, enabling asynchronous processing and decoupling of services.
+
+### Kafka Features
+
+- **Event Publishing**: Automatically publishes messages to Kafka when events are created, updated, or deleted
+- **Event Consumption**: Consumer service that processes Kafka messages for logging, notifications, or analytics
+- **Asynchronous Processing**: Non-blocking message publishing using goroutines
+- **Fault Tolerance**: Graceful handling when Kafka is unavailable
+- **KRaft Mode**: Uses Kafka's built-in consensus protocol (no Zookeeper required)
+
+### Kafka Architecture
+
+#### Producer
+- Publishes messages to the `events` topic
+- Message format: JSON with action type and event data
+- Actions: `created`, `updated`, `deleted`
+
+#### Consumer
+- Consumes messages from the `events` topic using consumer group `event-consumer-group`
+- Processes messages asynchronously
+- Currently logs events (can be extended for notifications, analytics, etc.)
+
+#### Message Format
+```json
+{
+  "action": "created",
+  "event": {
+    "id": 1,
+    "name": "Sample Event",
+    "description": "Event description",
+    "location": "Event location",
+    "date_time": "2025-12-25T10:00:00Z",
+    "user_id": 1
+  }
+}
+```
+
+### Running with Kafka
+
+The Docker Compose setup includes Kafka in KRaft mode:
+
+```bash
+# Start all services including Kafka
+docker-compose up --build
+
+# Services will be available at:
+# - Kafka: localhost:9092 (KRaft mode - no Zookeeper needed)
+```
+
+### Kafka Configuration
+
+This setup uses **KRaft mode** (Kafka Raft Metadata mode), which eliminates the need for Zookeeper by using Kafka's built-in consensus protocol for metadata management.
+
+**Key KRaft Configuration:**
+- `KAFKA_NODE_ID`: Unique identifier for this Kafka node
+- `KAFKA_PROCESS_ROLES`: Roles this node performs (broker,controller)
+- `KAFKA_CONTROLLER_QUORUM_VOTERS`: Controller quorum configuration
+- `CLUSTER_ID`: Unique identifier for the Kafka cluster
+
+Environment variables for Kafka (configured in docker-compose.yml):
+- `KAFKA_BROKERS`: Kafka broker addresses (kafka:29092 for Docker)
+
+### Testing Kafka Integration
+
+The Kafka integration has been thoroughly tested and verified:
+
+✅ **Event Creation**: Messages published and consumed successfully
+✅ **Event Updates**: Update operations trigger Kafka messages
+✅ **Event Deletion**: Delete operations publish to Kafka
+✅ **KRaft Mode**: Running without Zookeeper dependency
+✅ **Consumer Groups**: Proper message consumption with group coordination
+✅ **Fault Tolerance**: Graceful handling when Kafka is unavailable
+
+**Test Results:**
+- All CRUD operations successfully publish to Kafka
+- Consumer receives and processes all messages
+- Message format includes complete event data
+- Asynchronous processing works without blocking API responses
+
+### Extending Kafka Usage
+
+The current implementation provides a foundation that can be extended for:
+
+1. **Email Notifications**: Send emails when events are created/updated
+2. **Analytics**: Track event metrics and user engagement
+3. **Caching**: Invalidate caches when events change
+4. **Search Indexing**: Update search indexes for events
+5. **Audit Logging**: Comprehensive audit trails
+6. **Real-time Updates**: WebSocket notifications for connected clients
+
+### Kafka Consumer Extension Example
+
+```go
+func (c *Consumer) processMessage(msg *kafka.Message) {
+    var eventMessage EventMessage
+    err := json.Unmarshal(msg.Value, &eventMessage)
+    if err != nil {
+        log.Printf("Failed to unmarshal message: %v", err)
+        return
+    }
+
+    switch eventMessage.Action {
+    case "created":
+        // Send notification to event creator
+        c.sendNotification(eventMessage.Event)
+    case "updated":
+        // Update search index
+        c.updateSearchIndex(eventMessage.Event)
+    case "deleted":
+        // Clean up related data
+        c.cleanupRelatedData(eventMessage.Event)
+    }
+
+    log.Printf("Processed event: Action=%s, EventID=%d", eventMessage.Action, eventMessage.Event.ID)
+}
+```
 
 ## Running with Docker Compose
 
@@ -103,10 +225,6 @@ DB_USER=postgres
 DB_PASSWORD=postgres
 DB_NAME=eventdb
 ```
-
-## Manual Installation & Setup
-
-If you prefer to run without Docker:
 
 ## Dependency Injection
 
@@ -190,17 +308,22 @@ The container provides getter methods for each service:
 
 This ensures type safety and centralized service management throughout the application.
 
-## Prerequisites
+## Manual Installation & Setup
 
-- Go 1.25.0 or later
+If you prefer to run without Docker:
+
+### Prerequisites
+
+- Go 1.25 or later
+- PostgreSQL database
 - Git (for cloning the repository)
 
-## Installation & Setup
+### Installation Steps
 
 1. **Clone the repository** (if not already done):
    ```bash
    git clone https://github.com/gurkanindibay/udemy-go-tryout.git
-   cd udemy-go-tryout/udemy-final-project
+   cd udemy-final-project
    ```
 
 2. **Install dependencies**:
@@ -208,16 +331,20 @@ This ensures type safety and centralized service management throughout the appli
    go mod tidy
    ```
 
-3. **Run the application**:
+3. **Set up PostgreSQL database**:
+   - Create a PostgreSQL database named `eventdb`
+   - Update connection settings in the code or set environment variables
+
+4. **Run the application**:
    ```bash
    go run main.go
    ```
 
-The server will start on `http://localhost:8080`
+The server will start on `http://localhost:8080` with gRPC on `localhost:50051`
 
 ## Database
 
-The application uses PostgreSQL with the following schema:
+The application uses PostgreSQL with GORM (Go Object-Relational Mapping) for database operations, providing an ORM layer that simplifies database interactions and migrations.
 
 ### Tables
 
@@ -240,7 +367,7 @@ The application uses PostgreSQL with the following schema:
   - `user_id` (INTEGER, FOREIGN KEY to users.id)
   - `UNIQUE(event_id, user_id)`
 
-The PostgreSQL database is created automatically when the application starts with Docker Compose.
+The PostgreSQL database is created automatically when the application starts with Docker Compose, and GORM handles automatic migrations based on the model structs.
 
 ## API Endpoints
 
@@ -410,13 +537,13 @@ API_BASE_URL=http://localhost:8080 ./test.sh
 
 - **`test.sh`** - Main test script (Linux/Mac)
 - **`test.bat`** - Windows test script
-- **`models/models_test.go`** - Go unit tests
+- **`models/models_test.go`** - Go unit tests for models
 
 #### Test Coverage
 
 The automated tests cover:
 
-**Unit Tests:**
+**Unit Tests (`models/models_test.go`):**
 - User model operations (save, retrieve, authenticate)
 - Event model operations (CRUD operations)
 - Database interactions with prepared statements
@@ -559,31 +686,48 @@ udemy-final-project/
 ├── go.sum                  # Dependency checksums
 ├── Dockerfile              # Docker build configuration
 ├── docker-compose.yml      # Docker Compose configuration
-├── .env                    # Environment variables for local development
-├── api-test/              # HTTP test files
+├── README.md               # Project documentation
+├── readme.txt              # Additional documentation
+├── api-test/              # HTTP test files for manual testing
 │   ├── auth-register.http
 │   ├── create-event.http
 │   ├── delete-event.http
 │   ├── delete-register.http
 │   ├── get-events-by-id.http
-│   ├── get-events-by-id.http
 │   ├── get-events.http
 │   ├── login.http
 │   ├── register.http
 │   └── update-event.http
+├── bin/                   # Compiled binaries and tools
+│   ├── protoc
+│   ├── protoc.exe
+│   └── udemy-rest-api
 ├── client/
 │   └── grpc_client.go     # Sample gRPC client
 ├── db/
 │   └── db.go              # Database initialization and connection
+├── di/
+│   └── container.go       # Dependency injection container
+├── docs/
+│   ├── docs.go            # Swagger documentation
+│   ├── swagger.json
+│   └── swagger.yaml
 ├── grpc/
 │   ├── auth/
 │   │   └── server.go      # gRPC auth service implementation
 │   └── event/
 │       └── server.go      # gRPC event service implementation
+├── include/
+│   └── google/
+│       └── protobuf/      # Protocol buffer definitions
+├── kafka/
+│   ├── consumer.go        # Kafka message consumer
+│   └── producer.go        # Kafka message producer
 ├── middlewares/
 │   └── auth.go            # JWT authentication middleware
 ├── models/
 │   ├── event.go           # Event model and database operations
+│   ├── models_test.go     # Unit tests for models
 │   └── user.go            # User model and authentication
 ├── proto/
 │   ├── auth.proto         # Auth service protobuf definition
@@ -595,9 +739,15 @@ udemy-final-project/
 │   ├── registers.go       # Registration-related REST routes
 │   ├── routes.go          # Main REST route setup
 │   └── users.go           # User-related REST routes
-└── utils/
-    ├── hash.go            # Password hashing utilities
-    └── jwt.go             # JWT token utilities
+├── security/
+│   ├── jwt.go             # JWT token utilities
+│   └── password.go        # Password hashing utilities
+├── services/
+│   ├── implementations.go # Service implementations
+│   └── interfaces.go      # Service interfaces
+├── test/
+│   └── grpc_client.go     # gRPC test client
+└── udemy-rest-api         # Compiled REST API binary
 ```
 
 ## Security Features
@@ -617,15 +767,17 @@ go build -o event-api main.go
 
 ### Running Tests
 
-Currently, the project doesn't have unit tests implemented, but you can add them using Go's testing framework.
+The project includes comprehensive unit tests and integration tests. See the [Testing](#testing) section for details on running tests.
 
 ### Environment Variables
 
-The application currently uses hardcoded values but can be extended to use environment variables for:
-- Database path
-- JWT secret key
-- Server port
-- etc.
+The application currently uses environment variables for database configuration and can be extended for other settings:
+- `DB_HOST`: Database host (default: localhost)
+- `DB_PORT`: Database port (default: 5432)
+- `DB_USER`: Database user (default: postgres)
+- `DB_PASSWORD`: Database password (default: postgres)
+- `DB_NAME`: Database name (default: eventdb)
+- `KAFKA_BROKERS`: Kafka broker addresses (default: localhost:9092)
 
 ## Contributing
 

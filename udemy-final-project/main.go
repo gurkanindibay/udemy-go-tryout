@@ -1,3 +1,4 @@
+// Package main provides the entry point for the event management API server.
 package main
 
 import (
@@ -5,14 +6,15 @@ import (
 	"net"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gurkanindibay/udemy-rest-api/db"
-	"github.com/gurkanindibay/udemy-rest-api/di"
-	_ "github.com/gurkanindibay/udemy-rest-api/docs" // This is required for swagger
-	"github.com/gurkanindibay/udemy-rest-api/grpc/auth"
-	"github.com/gurkanindibay/udemy-rest-api/grpc/event"
-	authpb "github.com/gurkanindibay/udemy-rest-api/proto/auth"
-	eventpb "github.com/gurkanindibay/udemy-rest-api/proto/event"
-	"github.com/gurkanindibay/udemy-rest-api/routes"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/db"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/di"
+	_ "github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/docs" // This is required for swagger
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/grpc/auth"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/grpc/event"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/kafka"
+	authpb "github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/proto/auth"
+	eventpb "github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/proto/event"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/routes"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -28,6 +30,10 @@ func main() {
 	log.Println("Initializing DI container...")
 	container = di.NewContainer()
 	log.Println("DI container initialized")
+
+	// Start Kafka consumer in a goroutine
+	log.Println("Starting Kafka consumer...")
+	go startKafkaConsumer()
 
 	// Start gRPC server in a goroutine
 	log.Println("Starting gRPC server...")
@@ -61,12 +67,14 @@ func startRESTServer() {
 
 	routes.SetupRoutes(server)
 	log.Println("REST server starting on :8080")
-	server.Run(":8080")
+	if err := server.Run(":8080"); err != nil {
+		log.Fatalf("Failed to start REST server: %v", err)
+	}
 }
 
 func startGRPCServer() {
 	log.Println("Creating gRPC listener...")
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", "localhost:50051")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -96,6 +104,21 @@ func startGRPCServer() {
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve gRPC: %v", err)
 	}
+}
+
+func startKafkaConsumer() {
+	consumer, err := kafka.NewConsumer()
+	if err != nil {
+		log.Printf("Failed to create Kafka consumer: %v", err)
+		return
+	}
+	defer func() {
+		if err := consumer.Close(); err != nil {
+			log.Printf("Error closing Kafka consumer: %v", err)
+		}
+	}()
+
+	consumer.StartConsuming()
 }
 
 // Event Management API

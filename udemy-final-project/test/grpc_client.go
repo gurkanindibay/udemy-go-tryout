@@ -1,3 +1,4 @@
+// Package main provides a comprehensive gRPC client test suite for the event management API.
 package main
 
 import (
@@ -6,8 +7,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/gurkanindibay/udemy-rest-api/proto/auth"
-	"github.com/gurkanindibay/udemy-rest-api/proto/event"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/proto/auth"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/proto/event"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -20,7 +21,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			log.Printf("Error closing connection: %v", err)
+		}
+	}()
 
 	// Create clients
 	authClient := auth.NewAuthServiceClient(conn)
@@ -28,7 +33,7 @@ func main() {
 
 	// Test variables
 	testEmail := "grpc-test@example.com"
-	testPassword := "grpc-test-password"
+	testPassword := "grpc-test-password" // #nosec G101
 
 	fmt.Println("Starting gRPC tests...")
 
@@ -95,8 +100,8 @@ func main() {
 		fmt.Printf("Create event failed: %v\n", err)
 		return
 	}
-	eventId := createEventResp.Event.Id
-	fmt.Printf("Create event successful: Event ID %d\n", eventId)
+	eventID := createEventResp.Event.Id
+	fmt.Printf("Create event successful: Event ID %d\n", eventID)
 
 	// Test 5: Get Events (should have 1 event)
 	fmt.Println("Test 5: gRPC Get Events (should return 1 event)")
@@ -115,7 +120,7 @@ func main() {
 	// Test 6: Get Event by ID
 	fmt.Println("Test 6: gRPC Get Event by ID")
 	getEventReq := &event.GetEventRequest{
-		Id: eventId,
+		Id: eventID,
 	}
 
 	getEventResp, err := eventClient.GetEvent(context.Background(), getEventReq)
@@ -123,17 +128,17 @@ func main() {
 		fmt.Printf("Get event by ID failed: %v\n", err)
 		return
 	}
-	if getEventResp.Event.Id == eventId {
+	if getEventResp.Event.Id == eventID {
 		fmt.Println("Get event by ID successful")
 	} else {
-		fmt.Printf("Get event by ID failed: Expected ID %d, got %d\n", eventId, getEventResp.Event.Id)
+		fmt.Printf("Get event by ID failed: Expected ID %d, got %d\n", eventID, getEventResp.Event.Id)
 		return
 	}
 
 	// Test 7: Update Event
 	fmt.Println("Test 7: gRPC Update Event")
 	updateEventReq := &event.UpdateEventRequest{
-		Id:          eventId,
+		Id:          eventID,
 		Name:        "Updated gRPC Test Event",
 		Description: "This is an updated test event via gRPC",
 		Location:    "Updated gRPC Test Location",
@@ -155,7 +160,7 @@ func main() {
 	// Test 8: Register for Event
 	fmt.Println("Test 8: gRPC Register for Event")
 	registerForEventReq := &event.RegisterForEventRequest{
-		EventId: eventId,
+		EventId: eventID,
 	}
 
 	_, err = eventClient.RegisterForEvent(createAuthContext(), registerForEventReq)
@@ -187,7 +192,7 @@ func main() {
 	// Test 10: Cancel Registration
 	fmt.Println("Test 10: gRPC Cancel Registration")
 	cancelRegistrationReq := &event.CancelRegistrationRequest{
-		EventId: eventId,
+		EventId: eventID,
 	}
 
 	_, err = eventClient.CancelRegistration(createAuthContext(), cancelRegistrationReq)
@@ -200,7 +205,7 @@ func main() {
 	// Test 11: Delete Event
 	fmt.Println("Test 11: gRPC Delete Event")
 	deleteEventReq := &event.DeleteEventRequest{
-		Id: eventId,
+		Id: eventID,
 	}
 
 	_, err = eventClient.DeleteEvent(createAuthContext(), deleteEventReq)

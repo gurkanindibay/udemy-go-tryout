@@ -1,4 +1,4 @@
-module github.com/example/go-basics
+module github.com/gurkanindibay/udemy-go-tryout/go-basics
 
 go 1.23.0
 

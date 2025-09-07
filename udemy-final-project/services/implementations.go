@@ -1,15 +1,20 @@
+// Package services provides business logic implementations for the application.
 package services
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 
-	"github.com/gurkanindibay/udemy-rest-api/models"
-	"github.com/gurkanindibay/udemy-rest-api/utils"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/kafka"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/models"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/security"
 )
 
 // userServiceImpl implements UserService
 type userServiceImpl struct{}
 
+// NewUserService creates a new instance of UserService
 func NewUserService() UserService {
 	return &userServiceImpl{}
 }
@@ -32,10 +37,20 @@ func (s *userServiceImpl) Login(email, password string) (*models.User, error) {
 }
 
 // eventServiceImpl implements EventService
-type eventServiceImpl struct{}
+type eventServiceImpl struct {
+	producer *kafka.Producer
+}
 
+// NewEventService creates a new instance of EventService with Kafka producer
 func NewEventService() EventService {
-	return &eventServiceImpl{}
+	producer, err := kafka.NewProducer()
+	if err != nil {
+		// Log error but don't fail, allow service to work without Kafka
+		producer = nil
+	}
+	return &eventServiceImpl{
+		producer: producer,
+	}
 }
 
 func (s *eventServiceImpl) GetAllEvents() ([]models.Event, error) {
@@ -50,15 +65,51 @@ func (s *eventServiceImpl) CreateEvent(event models.Event) (*models.Event, error
 	if err := event.Save(); err != nil {
 		return nil, err
 	}
+	// Publish to Kafka
+	if s.producer != nil {
+		go func() {
+			err := s.producer.PublishEvent("created", strconv.FormatInt(event.ID, 10), event)
+			if err != nil {
+				// Log error but don't fail the operation
+				// In production, you might want to use a proper logger
+				fmt.Printf("Failed to publish event to Kafka: %v\n", err)
+			}
+		}()
+	}
 	return &event, nil
 }
 
 func (s *eventServiceImpl) UpdateEvent(event models.Event) error {
-	return event.Update()
+	err := event.Update()
+	if err == nil && s.producer != nil {
+		go func() {
+			err := s.producer.PublishEvent("updated", strconv.FormatInt(event.ID, 10), event)
+			if err != nil {
+				fmt.Printf("Failed to publish event to Kafka: %v\n", err)
+			}
+		}()
+	}
+	return err
 }
 
 func (s *eventServiceImpl) DeleteEvent(id string) error {
-	return models.DeleteEvent(id)
+	event, err := s.GetEventByID(id)
+	if err != nil {
+		return err
+	}
+	if event == nil {
+		return errors.New("event not found")
+	}
+	err = models.DeleteEvent(id)
+	if err == nil && s.producer != nil {
+		go func() {
+			err := s.producer.PublishEvent("deleted", strconv.FormatInt(event.ID, 10), *event)
+			if err != nil {
+				fmt.Printf("Failed to publish event to Kafka: %v\n", err)
+			}
+		}()
+	}
+	return err
 }
 
 func (s *eventServiceImpl) RegisterForEvent(userID int64, eventID string) error {
@@ -84,15 +135,16 @@ func (s *eventServiceImpl) GetUserRegistrations(userID int64) ([]models.Event, e
 // authServiceImpl implements AuthService
 type authServiceImpl struct{}
 
+// NewAuthService creates a new instance of AuthService
 func NewAuthService() AuthService {
 	return &authServiceImpl{}
 }
 
 func (s *authServiceImpl) GenerateToken(email string, userID int64) (string, error) {
-	return utils.GenerateToken(email, userID)
+	return security.GenerateToken(email, userID)
 }
 
-func (s *authServiceImpl) ValidateToken(tokenString string) (*models.User, error) {
-	// This would need to be implemented in utils
+func (s *authServiceImpl) ValidateToken(_ string) (*models.User, error) {
+	// Future enhancement: add method to fetch user from token if required.
 	return nil, errors.New("not implemented")
 }
