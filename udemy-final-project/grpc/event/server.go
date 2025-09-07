@@ -8,6 +8,8 @@ import (
 	"github.com/gurkanindibay/udemy-rest-api/models"
 	eventpb "github.com/gurkanindibay/udemy-rest-api/proto/event"
 	"github.com/gurkanindibay/udemy-rest-api/services"
+	"github.com/gurkanindibay/udemy-rest-api/utils"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -20,6 +22,33 @@ func NewEventServer(eventService services.EventService) *EventServer {
 	return &EventServer{
 		eventService: eventService,
 	}
+}
+
+// Helper function to extract user ID from gRPC context
+func getUserIDFromContext(ctx context.Context) (int64, error) {
+	// Get authorization header from metadata
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return 0, errors.New("no metadata found")
+	}
+
+	authHeader, exists := md["authorization"]
+	if !exists || len(authHeader) == 0 {
+		return 0, errors.New("authorization header is required")
+	}
+
+	tokenString := authHeader[0]
+	// Remove "Bearer " prefix if present
+	if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+		tokenString = tokenString[7:]
+	}
+
+	userId, err := utils.ValidateToken(tokenString)
+	if err != nil {
+		return 0, errors.New("invalid token")
+	}
+
+	return userId, nil
 }
 
 // Helper function to convert model Event to protobuf Event
@@ -74,8 +103,10 @@ func (s *EventServer) GetEvent(ctx context.Context, req *eventpb.GetEventRequest
 }
 
 func (s *EventServer) CreateEvent(ctx context.Context, req *eventpb.CreateEventRequest) (*eventpb.CreateEventResponse, error) {
-	// Get user ID from context (would need authentication middleware)
-	userId := int64(1) // Placeholder - should come from auth context
+	userId, err := getUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	event := models.Event{
 		Name:        req.Name,
@@ -96,8 +127,10 @@ func (s *EventServer) CreateEvent(ctx context.Context, req *eventpb.CreateEventR
 }
 
 func (s *EventServer) UpdateEvent(ctx context.Context, req *eventpb.UpdateEventRequest) (*eventpb.UpdateEventResponse, error) {
-	// Get user ID from context (would need authentication middleware)
-	userId := int64(1) // Placeholder - should come from auth context
+	userId, err := getUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	// Check if the event exists and belongs to the user
 	existingEvent, err := s.eventService.GetEventByID(strconv.FormatInt(req.Id, 10))
@@ -127,8 +160,10 @@ func (s *EventServer) UpdateEvent(ctx context.Context, req *eventpb.UpdateEventR
 }
 
 func (s *EventServer) DeleteEvent(ctx context.Context, req *eventpb.DeleteEventRequest) (*eventpb.DeleteEventResponse, error) {
-	// Get user ID from context (would need authentication middleware)
-	userId := int64(1) // Placeholder - should come from auth context
+	userId, err := getUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	// Check if the event exists and belongs to the user
 	event, err := s.eventService.GetEventByID(strconv.FormatInt(req.Id, 10))
@@ -147,8 +182,10 @@ func (s *EventServer) DeleteEvent(ctx context.Context, req *eventpb.DeleteEventR
 }
 
 func (s *EventServer) RegisterForEvent(ctx context.Context, req *eventpb.RegisterForEventRequest) (*eventpb.RegisterForEventResponse, error) {
-	// Get user ID from context (would need authentication middleware)
-	userId := int64(1) // Placeholder - should come from auth context
+	userId, err := getUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	if err := s.eventService.RegisterForEvent(userId, strconv.FormatInt(req.EventId, 10)); err != nil {
 		return nil, err
@@ -158,8 +195,10 @@ func (s *EventServer) RegisterForEvent(ctx context.Context, req *eventpb.Registe
 }
 
 func (s *EventServer) CancelRegistration(ctx context.Context, req *eventpb.CancelRegistrationRequest) (*eventpb.CancelRegistrationResponse, error) {
-	// Get user ID from context (would need authentication middleware)
-	userId := int64(1) // Placeholder - should come from auth context
+	userId, err := getUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	if err := s.eventService.CancelRegistration(userId, strconv.FormatInt(req.EventId, 10)); err != nil {
 		return nil, err
@@ -169,8 +208,10 @@ func (s *EventServer) CancelRegistration(ctx context.Context, req *eventpb.Cance
 }
 
 func (s *EventServer) GetUserRegistrations(ctx context.Context, req *eventpb.GetUserRegistrationsRequest) (*eventpb.GetUserRegistrationsResponse, error) {
-	// Get user ID from context (would need authentication middleware)
-	userId := int64(1) // Placeholder - should come from auth context
+	userId, err := getUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	events, err := s.eventService.GetUserRegistrations(userId)
 	if err != nil {

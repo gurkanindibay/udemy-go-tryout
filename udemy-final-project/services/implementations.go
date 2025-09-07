@@ -62,8 +62,13 @@ func (s *eventServiceImpl) DeleteEvent(id string) error {
 }
 
 func (s *eventServiceImpl) RegisterForEvent(userID int64, eventID string) error {
-	event := models.Event{ID: 0} // We'll need to parse eventID
-	// This is a simplified version - in real implementation you'd need to get the event first
+	// Get the event to ensure it exists
+	event, err := s.GetEventByID(eventID)
+	if err != nil {
+		return err
+	}
+
+	// Register the user for the event
 	return event.Register(userID)
 }
 

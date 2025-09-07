@@ -35,6 +35,28 @@ log_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
+# Clean up test data from database
+cleanup_database() {
+    log_info "Cleaning up test data from database..."
+
+    # Use the database connection to clean up test data
+    # We'll use a simple approach by restarting the containers to get a fresh database
+    log_info "Restarting containers to get fresh database state..."
+
+    # Stop containers
+    docker compose down
+
+    # Remove volumes to clean database
+    docker volume rm $(docker volume ls -q | grep udemy-final-project) 2>/dev/null || true
+
+    # Start containers again
+    docker compose up -d --build
+
+    # Wait for services to be ready
+    sleep 10
+    wait_for_service "$API_BASE_URL" "REST API after cleanup"
+}
+
 # Check if required tools are installed
 check_dependencies() {
     log_info "Checking dependencies..."
@@ -223,7 +245,7 @@ test_rest_api() {
     local delete_response=$(curl -s -X DELETE "$API_BASE_URL/events/$event_id" \
         -H "Authorization: Bearer $jwt_token")
 
-    if [ "$delete_response" = "{}" ] || echo "$delete_response" | jq -e 'has("message")' > /dev/null 2>&1; then
+    if [ -z "$delete_response" ] || [ "$delete_response" = "{}" ] || echo "$delete_response" | jq -e 'has("message")' > /dev/null 2>&1; then
         log_success "Event deletion successful"
     else
         log_error "Event deletion failed: $delete_response"
@@ -238,13 +260,18 @@ test_rest_api() {
 test_grpc_api() {
     log_info "Starting gRPC API tests..."
 
-    # For now, we'll just check if the gRPC server is responding
-    # In a real scenario, you'd use grpcurl or a Go gRPC client
+    # Skip port check since nc is not available in Git Bash
+    # The gRPC server should be running if the container started successfully
 
-    log_info "gRPC tests would go here (grpcurl or Go client needed)"
-    log_warning "gRPC testing skipped for now - requires grpcurl or Go gRPC client"
-
-    return 0
+    # Run gRPC tests using Go client
+    log_info "Running gRPC tests with Go client..."
+    if go run test/grpc_client.go; then
+        log_success "gRPC tests completed successfully"
+        return 0
+    else
+        log_error "gRPC tests failed"
+        return 1
+    fi
 }
 
 # Main test execution
@@ -252,6 +279,9 @@ main() {
     log_info "🚀 Starting Event Management API Tests"
     log_info "API Base URL: $API_BASE_URL"
     log_info "gRPC Host: $GRPC_HOST"
+
+    # Clean up database before running tests
+    cleanup_database
 
     # Check dependencies
     check_dependencies

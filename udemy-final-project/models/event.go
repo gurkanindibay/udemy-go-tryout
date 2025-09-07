@@ -26,6 +26,13 @@ type Registration struct {
 	Event   Event `gorm:"foreignKey:EventId;constraint:OnDelete:SET NULL" json:"-"`
 }
 
+type CreateEventRequest struct {
+	Name        string    `json:"name" binding:"required"`
+	Description string    `json:"description" binding:"required"`
+	Location    string    `json:"location" binding:"required"`
+	DateTime    time.Time `json:"date_time" binding:"required"`
+}
+
 func (e *Event) Save() error {
 	gormDB := db.GetDB()
 	return gormDB.Select("Name", "Description", "Location", "DateTime", "UserId").Create(e).Error

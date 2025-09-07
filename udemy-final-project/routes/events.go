@@ -61,12 +61,19 @@ func createEvent(c *gin.Context) {
 
 	userId := c.GetInt64("userId")
 
-	var newEvent models.Event
-	if err := c.ShouldBindJSON(&newEvent); err != nil {
+	var request models.CreateEventRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	newEvent.UserId = userId
+
+	newEvent := models.Event{
+		Name:        request.Name,
+		Description: request.Description,
+		Location:    request.Location,
+		DateTime:    request.DateTime,
+		UserId:      userId,
+	}
 
 	createdEvent, err := eventService.CreateEvent(newEvent)
 	if err != nil {
@@ -85,7 +92,7 @@ func createEvent(c *gin.Context) {
 // @Param Authorization header string true "Bearer token"
 // @Param id path int true "Event ID"
 // @Param event body models.CreateEventRequest true "Updated event data"
-// @Success 200 {object} models.Event
+// @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 403 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -107,8 +114,8 @@ func updateEvent(c *gin.Context) {
 	}
 
 	// Bind the updated event data
-	var updatedEvent models.Event
-	if err := c.ShouldBindJSON(&updatedEvent); err != nil {
+	var request models.CreateEventRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -118,12 +125,19 @@ func updateEvent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
 		return
 	}
-	updatedEvent.ID = eventID
+	updatedEvent := models.Event{
+		ID:          eventID,
+		Name:        request.Name,
+		Description: request.Description,
+		Location:    request.Location,
+		DateTime:    request.DateTime,
+		UserId:      userId,
+	}
 	if err := eventService.UpdateEvent(updatedEvent); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, updatedEvent)
+	c.JSON(http.StatusOK, gin.H{"message": "Event updated successfully"})
 }
 
 // deleteEvent godoc
