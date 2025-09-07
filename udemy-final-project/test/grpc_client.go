@@ -33,7 +33,7 @@ func main() {
 
 	// Test variables
 	testEmail := "grpc-test@example.com"
-	testPassword := "grpc-test-password"
+	testPassword := "grpc-test-password" // #nosec G101
 
 	fmt.Println("Starting gRPC tests...")
 

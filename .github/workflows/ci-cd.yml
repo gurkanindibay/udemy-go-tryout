@@ -89,6 +89,47 @@ jobs:
     - name: Build application
       run: go build -v ./...
 
+  security-test:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: udemy-final-project
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-${{ env.GO_VERSION }}-
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Run gosec
+      uses: securego/gosec-action@v2
+      with:
+        args: './...'
+
+    - name: Install govulncheck
+      run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+    - name: Run govulncheck
+      run: govulncheck ./...
+
   build-and-test-docker:
     name: Build and Test Docker Image
     runs-on: ubuntu-latest
