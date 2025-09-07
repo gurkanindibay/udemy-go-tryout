@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gurkanindibay/udemy-rest-api/db"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/db"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"

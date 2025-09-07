@@ -61,10 +61,27 @@ jobs:
     - name: Install dependencies
       run: go mod download
 
+    - name: Install protobuf compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y protobuf-compiler
+
+    - name: Install protobuf Go plugins
+      run: |
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+    - name: Generate protobuf files
+      run: |
+        export PATH=$PATH:$(go env GOPATH)/bin
+        protoc --proto_path=. --proto_path=./include --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/auth.proto proto/event.proto
+        mv proto/auth.pb.go proto/auth_grpc.pb.go proto/auth/ 2>/dev/null || true
+        mv proto/event.pb.go proto/event_grpc.pb.go proto/event/ 2>/dev/null || true
+
     - name: Install golangci-lint
       uses: golangci/golangci-lint-action@v8
       with:
-        version: latest
+        version: v1.61.0
         working-directory: udemy-final-project
 
     - name: Run golangci-lint
@@ -119,10 +136,27 @@ jobs:
     - name: Install dependencies
       run: go mod download
 
-    - name: Run gosec
-      uses: securego/gosec@master
+    - name: Install protobuf compiler
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y protobuf-compiler
+
+    - name: Install protobuf Go plugins
+      run: |
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+    - name: Generate protobuf files
+      run: |
+        export PATH=$PATH:$(go env GOPATH)/bin
+        protoc --proto_path=. --proto_path=./include --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/auth.proto proto/event.proto
+        mv proto/auth.pb.go proto/auth_grpc.pb.go proto/auth/ 2>/dev/null || true
+        mv proto/event.pb.go proto/event_grpc.pb.go proto/event/ 2>/dev/null || true
+
+    - name: Run gosec (excluding auto-generated files)
+      uses: securego/gosec@v2.21.4
       with:
-        args: './...'
+        args: '-exclude-dir=proto/auth,exclude-dir=proto/event ./...'
 
     - name: Install govulncheck
       run: go install golang.org/x/vuln/cmd/govulncheck@latest
@@ -177,9 +211,6 @@ jobs:
     name: Integration Tests
     runs-on: ubuntu-latest
     needs: build-and-test-docker
-    defaults:
-      run:
-        working-directory: udemy-final-project
 
     steps:
     - name: Checkout code
@@ -229,6 +260,7 @@ jobs:
 
     - name: Run integration tests
       run: |
+        cd udemy-final-project
         chmod +x test.sh
         ./test.sh
       env:

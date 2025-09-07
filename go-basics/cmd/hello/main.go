@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/example/go-basics/pkg/utils"
+	"github.com/gurkanindibay/udemy-go-tryout/go-basics/pkg/utils"
 )
 
 func main() {

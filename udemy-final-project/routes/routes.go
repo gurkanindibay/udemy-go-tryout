@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/gurkanindibay/udemy-rest-api/middlewares"
-	"github.com/gurkanindibay/udemy-rest-api/services"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/middlewares"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/services"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )

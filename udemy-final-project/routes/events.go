@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gurkanindibay/udemy-rest-api/models"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/models"
 )
 
 // getEvents godoc

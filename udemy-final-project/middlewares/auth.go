@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gurkanindibay/udemy-rest-api/security"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/security"
 )
 
 // Authenticate is a middleware that validates JWT tokens and sets user ID in context

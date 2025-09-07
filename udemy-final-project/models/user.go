@@ -3,8 +3,8 @@ package models
 import (
 	"log"
 
-	"github.com/gurkanindibay/udemy-rest-api/db"
-	"github.com/gurkanindibay/udemy-rest-api/security"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/db"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/security"
 	"gorm.io/gorm"
 )
 

@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/gurkanindibay/udemy-rest-api/models"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/models"
 )
 
 // UserService interface for user operations

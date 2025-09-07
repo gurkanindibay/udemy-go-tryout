@@ -2,11 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/gurkanindibay/udemy-course/user"
+
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-go-course/user"
 )
-
-
-		
 
 func test_structs() {
 	user, err := user.NewUser(
@@ -27,8 +25,6 @@ func test_structs() {
 	fmt.Println(user.OutputUserDetails())
 }
 
-
-
 func outputUserData(user user.User) {
 	fmt.Println("User Information:")
 	fmt.Println("First Name:", user.FirstName)
@@ -38,6 +34,9 @@ func outputUserData(user user.User) {
 func getUserData(promptText string) string {
 	fmt.Print(promptText)
 	var value string
-	fmt.Scanln(&value)
+	_, err := fmt.Scanln(&value)
+	if err != nil {
+		return ""
+	}
 	return value
 }

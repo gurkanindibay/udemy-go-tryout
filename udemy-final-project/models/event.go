@@ -4,7 +4,7 @@ package models
 import (
 	"time"
 
-	"github.com/gurkanindibay/udemy-rest-api/db"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/db"
 	"gorm.io/gorm"
 )
 

@@ -1,0 +1,10 @@
+Results:
+
+
+Summary:
+  Gosec  : 2.22.8
+  Files  : 21
+  Lines  : 2556
+  Nosec  : 1
+  Issues : 0
+

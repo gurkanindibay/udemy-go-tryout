@@ -6,8 +6,8 @@ import (
 	"errors"
 	"log"
 
-	authpb "github.com/gurkanindibay/udemy-rest-api/proto/auth"
-	"github.com/gurkanindibay/udemy-rest-api/services"
+	authpb "github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/proto/auth"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/services"
 )
 
 // Server implements the gRPC AuthService server

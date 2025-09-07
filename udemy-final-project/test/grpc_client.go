@@ -7,8 +7,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/gurkanindibay/udemy-rest-api/proto/auth"
-	"github.com/gurkanindibay/udemy-rest-api/proto/event"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/proto/auth"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/proto/event"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"

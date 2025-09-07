@@ -11,17 +11,28 @@ func investmentCalculator() {
 	expectedReturnRate := 5.5
 
 	fmt.Print("Investment Amount:")
-	fmt.Scan(&investmentAmount)
+	_, err := fmt.Scan(&investmentAmount)
+	if err != nil {
+		fmt.Println("Error reading investment amount:", err)
+		return
+	}
 
 	fmt.Print("Years:")
-	fmt.Scan(&years)
+	_, err = fmt.Scan(&years)
+	if err != nil {
+		fmt.Println("Error reading years:", err)
+		return
+	}
 
 	fmt.Print("Expected Return Rate:")
-	fmt.Scan(&expectedReturnRate)
+	_, err = fmt.Scan(&expectedReturnRate)
+	if err != nil {
+		fmt.Println("Error reading expected return rate:", err)
+		return
+	}
 
 	futureValue, inflationAdjustedValue := calculateFutureValues(investmentAmount, expectedReturnRate, years, inflationRate)
 	fmt.Printf("Future value of the investment: %.2f\n", futureValue)
-
 
 	var stringToPrint = fmt.Sprintf("Future value adjusted for inflation: %.2f\n", inflationAdjustedValue)
 	fmt.Print(stringToPrint)

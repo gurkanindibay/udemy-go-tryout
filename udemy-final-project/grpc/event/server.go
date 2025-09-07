@@ -6,10 +6,10 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/gurkanindibay/udemy-rest-api/models"
-	eventpb "github.com/gurkanindibay/udemy-rest-api/proto/event"
-	"github.com/gurkanindibay/udemy-rest-api/security"
-	"github.com/gurkanindibay/udemy-rest-api/services"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/models"
+	eventpb "github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/proto/event"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/security"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/services"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

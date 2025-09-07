@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/gurkanindibay/udemy-rest-api/kafka"
-	"github.com/gurkanindibay/udemy-rest-api/models"
-	"github.com/gurkanindibay/udemy-rest-api/security"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/kafka"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/models"
+	"github.com/gurkanindibay/udemy-go-tryout/udemy-final-project/security"
 )
 
 // userServiceImpl implements UserService
