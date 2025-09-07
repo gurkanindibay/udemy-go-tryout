@@ -14,23 +14,21 @@ type Event struct {
 	Location      string         `json:"location" gorm:"not null" binding:"required" example:"Sample Location"`
 	DateTime      time.Time      `json:"date_time" gorm:"not null" binding:"required" example:"2023-10-10T10:00:00Z"`
 	UserId        int64          `json:"user_id,omitempty" gorm:"not null" example:"1"`
-	User          User           `gorm:"foreignKey:UserId"`
-	Registrations []Registration `gorm:"foreignKey:EventId"`
+	User          User           `gorm:"foreignKey:UserId;constraint:OnDelete:SET NULL" json:"-"`
+	Registrations []Registration `gorm:"foreignKey:EventId;constraint:OnDelete:CASCADE" json:"-"`
 }
 
 type Registration struct {
 	ID      int64 `gorm:"primaryKey"`
 	UserId  int64 `gorm:"not null"`
 	EventId int64 `gorm:"not null"`
-	User    User  `gorm:"foreignKey:UserId"`
-	Event   Event `gorm:"foreignKey:EventId"`
+	User    User  `gorm:"foreignKey:UserId;constraint:OnDelete:SET NULL" json:"-"`
+	Event   Event `gorm:"foreignKey:EventId;constraint:OnDelete:SET NULL" json:"-"`
 }
-
-var events = []Event{}
 
 func (e *Event) Save() error {
 	gormDB := db.GetDB()
-	return gormDB.Create(e).Error
+	return gormDB.Select("Name", "Description", "Location", "DateTime", "UserId").Create(e).Error
 }
 
 func GetAllEvents() ([]Event, error) {
@@ -55,7 +53,7 @@ func GetEventByID(id string) (*Event, error) {
 
 func (e *Event) Update() error {
 	gormDB := db.GetDB()
-	return gormDB.Save(e).Error
+	return gormDB.Model(e).Select("Name", "Description", "Location", "DateTime", "UserId").Updates(e).Error
 }
 
 func DeleteEvent(id string) error {
