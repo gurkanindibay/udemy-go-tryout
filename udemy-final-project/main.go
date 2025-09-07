@@ -10,6 +10,7 @@ import (
 	_ "github.com/gurkanindibay/udemy-rest-api/docs" // This is required for swagger
 	"github.com/gurkanindibay/udemy-rest-api/grpc/auth"
 	"github.com/gurkanindibay/udemy-rest-api/grpc/event"
+	"github.com/gurkanindibay/udemy-rest-api/kafka"
 	authpb "github.com/gurkanindibay/udemy-rest-api/proto/auth"
 	eventpb "github.com/gurkanindibay/udemy-rest-api/proto/event"
 	"github.com/gurkanindibay/udemy-rest-api/routes"
@@ -28,6 +29,10 @@ func main() {
 	log.Println("Initializing DI container...")
 	container = di.NewContainer()
 	log.Println("DI container initialized")
+
+	// Start Kafka consumer in a goroutine
+	log.Println("Starting Kafka consumer...")
+	go startKafkaConsumer()
 
 	// Start gRPC server in a goroutine
 	log.Println("Starting gRPC server...")
@@ -96,6 +101,17 @@ func startGRPCServer() {
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve gRPC: %v", err)
 	}
+}
+
+func startKafkaConsumer() {
+	consumer, err := kafka.NewConsumer()
+	if err != nil {
+		log.Printf("Failed to create Kafka consumer: %v", err)
+		return
+	}
+	defer consumer.Close()
+
+	consumer.StartConsuming()
 }
 
 // Event Management API

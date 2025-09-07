@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 
+	"github.com/gurkanindibay/udemy-rest-api/kafka"
 	"github.com/gurkanindibay/udemy-rest-api/models"
 	"github.com/gurkanindibay/udemy-rest-api/utils"
 )
@@ -32,10 +33,19 @@ func (s *userServiceImpl) Login(email, password string) (*models.User, error) {
 }
 
 // eventServiceImpl implements EventService
-type eventServiceImpl struct{}
+type eventServiceImpl struct{
+	producer *kafka.Producer
+}
 
 func NewEventService() EventService {
-	return &eventServiceImpl{}
+	producer, err := kafka.NewProducer()
+	if err != nil {
+		// Log error but don't fail, allow service to work without Kafka
+		producer = nil
+	}
+	return &eventServiceImpl{
+		producer: producer,
+	}
 }
 
 func (s *eventServiceImpl) GetAllEvents() ([]models.Event, error) {
@@ -50,15 +60,34 @@ func (s *eventServiceImpl) CreateEvent(event models.Event) (*models.Event, error
 	if err := event.Save(); err != nil {
 		return nil, err
 	}
+	// Publish to Kafka
+	if s.producer != nil {
+		go s.producer.PublishEvent("created", event)
+	}
 	return &event, nil
 }
 
 func (s *eventServiceImpl) UpdateEvent(event models.Event) error {
-	return event.Update()
+	err := event.Update()
+	if err == nil && s.producer != nil {
+		go s.producer.PublishEvent("updated", event)
+	}
+	return err
 }
 
 func (s *eventServiceImpl) DeleteEvent(id string) error {
-	return models.DeleteEvent(id)
+	event, err := s.GetEventByID(id)
+	if err != nil {
+		return err
+	}
+	if event == nil {
+		return errors.New("event not found")
+	}
+	err = models.DeleteEvent(id)
+	if err == nil && s.producer != nil {
+		go s.producer.PublishEvent("deleted", *event)
+	}
+	return err
 }
 
 func (s *eventServiceImpl) RegisterForEvent(userID int64, eventID string) error {

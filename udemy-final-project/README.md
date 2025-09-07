@@ -34,6 +34,101 @@ The API uses PostgreSQL as the database, JWT for authentication, and follows RES
 - **Dependency Injection**: samber/do (for service management)
 - **Containerization**: Docker & Docker Compose
 - **JSON**: Standard library with Gin bindings
+- **Message Queue**: Apache Kafka (segmentio/kafka-go) for event-driven architecture
+
+## Kafka Integration
+
+This project includes Apache Kafka integration for event-driven messaging, enabling asynchronous processing and decoupling of services.
+
+### Kafka Features
+
+- **Event Publishing**: Automatically publishes messages to Kafka when events are created, updated, or deleted
+- **Event Consumption**: Consumer service that processes Kafka messages for logging, notifications, or analytics
+- **Asynchronous Processing**: Non-blocking message publishing using goroutines
+- **Fault Tolerance**: Graceful handling when Kafka is unavailable
+
+### Kafka Architecture
+
+#### Producer
+- Publishes messages to the `events` topic
+- Message format: JSON with action type and event data
+- Actions: `created`, `updated`, `deleted`
+
+#### Consumer
+- Consumes messages from the `events` topic
+- Processes messages asynchronously
+- Currently logs events (can be extended for notifications, analytics, etc.)
+
+#### Message Format
+```json
+{
+  "action": "created",
+  "event": {
+    "id": 1,
+    "name": "Sample Event",
+    "description": "Event description",
+    "location": "Event location",
+    "date_time": "2025-12-25T10:00:00Z",
+    "user_id": 1
+  }
+}
+```
+
+### Running with Kafka
+
+The Docker Compose setup includes Kafka and Zookeeper services:
+
+```bash
+# Start all services including Kafka
+docker-compose up --build
+
+# Services will be available at:
+# - Kafka: localhost:9092
+# - Zookeeper: localhost:2181
+```
+
+### Kafka Configuration
+
+Environment variables for Kafka (configured in docker-compose.yml):
+- `KAFKA_BROKERS`: Kafka broker addresses (kafka:29092 for Docker)
+
+### Extending Kafka Usage
+
+The current implementation provides a foundation that can be extended for:
+
+1. **Email Notifications**: Send emails when events are created/updated
+2. **Analytics**: Track event metrics and user engagement
+3. **Caching**: Invalidate caches when events change
+4. **Search Indexing**: Update search indexes for events
+5. **Audit Logging**: Comprehensive audit trails
+6. **Real-time Updates**: WebSocket notifications for connected clients
+
+### Kafka Consumer Extension Example
+
+```go
+func (c *Consumer) processMessage(msg *kafka.Message) {
+    var eventMessage EventMessage
+    err := json.Unmarshal(msg.Value, &eventMessage)
+    if err != nil {
+        log.Printf("Failed to unmarshal message: %v", err)
+        return
+    }
+
+    switch eventMessage.Action {
+    case "created":
+        // Send notification to event creator
+        c.sendNotification(eventMessage.Event)
+    case "updated":
+        // Update search index
+        c.updateSearchIndex(eventMessage.Event)
+    case "deleted":
+        // Clean up related data
+        c.cleanupRelatedData(eventMessage.Event)
+    }
+
+    log.Printf("Processed event: Action=%s, EventID=%d", eventMessage.Action, eventMessage.Event.ID)
+}
+```
 
 ## Running with Docker Compose
 

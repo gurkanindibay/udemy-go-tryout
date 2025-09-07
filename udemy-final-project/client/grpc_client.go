@@ -9,6 +9,7 @@ import (
 	"github.com/gurkanindibay/udemy-rest-api/proto/event"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -23,6 +24,8 @@ func main() {
 	// Create clients
 	authClient := auth.NewAuthServiceClient(conn)
 	eventClient := event.NewEventServiceClient(conn)
+
+	var token string
 
 	// Register a new user
 	log.Println("Registering user...")
@@ -47,13 +50,21 @@ func main() {
 	} else {
 		log.Printf("Login successful: %s", loginResp.Message)
 		log.Printf("Token: %s", loginResp.Token)
+		token = loginResp.Token
+	}
+
+	// Create authenticated context for subsequent requests
+	ctx := context.Background()
+	if token != "" {
+		md := metadata.New(map[string]string{"authorization": "Bearer " + token})
+		ctx = metadata.NewOutgoingContext(ctx, md)
 	}
 
 	// Create an event
 	log.Println("Creating event...")
-	eventResp, err := eventClient.CreateEvent(context.Background(), &event.CreateEventRequest{
+	eventResp, err := eventClient.CreateEvent(ctx, &event.CreateEventRequest{
 		Name:        "gRPC Test Event",
-		Description: "Testing gRPC event creation",
+		Description: "Testing gRPC event creation with Kafka",
 		Location:    "Test Location",
 		DateTime:    timestamppb.New(time.Now().Add(24 * time.Hour)),
 	})
@@ -63,15 +74,29 @@ func main() {
 		log.Printf("Event created: %+v", eventResp.Event)
 	}
 
-	// Get all events
-	log.Println("Getting all events...")
-	eventsResp, err := eventClient.GetEvents(context.Background(), &event.GetEventsRequest{})
+	// Update the event
+	log.Println("Updating event...")
+	_, err = eventClient.UpdateEvent(ctx, &event.UpdateEventRequest{
+		Id:          3, // Use the ID from the created event
+		Name:        "Updated gRPC Test Event",
+		Description: "Updated description for Kafka testing",
+		Location:    "Updated Location",
+		DateTime:    timestamppb.New(time.Now().Add(48 * time.Hour)),
+	})
 	if err != nil {
-		log.Printf("Get events failed: %v", err)
+		log.Printf("Update event failed: %v", err)
 	} else {
-		log.Printf("Found %d events", len(eventsResp.Events))
-		for _, e := range eventsResp.Events {
-			log.Printf("Event: %s - %s", e.Name, e.Description)
-		}
+		log.Printf("Event updated successfully")
+	}
+
+	// Delete the event
+	log.Println("Deleting event...")
+	_, err = eventClient.DeleteEvent(ctx, &event.DeleteEventRequest{
+		Id: 3,
+	})
+	if err != nil {
+		log.Printf("Delete event failed: %v", err)
+	} else {
+		log.Printf("Event deleted successfully")
 	}
 }
