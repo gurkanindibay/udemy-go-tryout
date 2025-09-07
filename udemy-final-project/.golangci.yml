@@ -1,0 +1,40 @@
+run:
+  timeout: 5m
+  issues-exit-code: 1
+  tests: true
+
+linters:
+  enable:
+    - revive  # replaces golint
+    - gofmt
+    - goimports
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gosimple
+    - goconst
+    - gocyclo
+    - misspell
+
+linters-settings:
+  revive:
+    min-confidence: 0.8
+    rules:
+      - name: exported
+        disabled: false
+      - name: package-comments
+        disabled: true  # Allow packages without comments
+      - name: var-naming
+        disabled: false
+
+issues:
+  exclude-rules:
+    # Exclude stuttering warnings for gRPC server types
+    - path: grpc/
+      linters:
+        - revive
+      text: "stutters"
+  # Exclude generated protobuf files
+  exclude-files:
+    - ".*\\.pb\\.go$"

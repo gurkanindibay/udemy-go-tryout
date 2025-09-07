@@ -13,11 +13,13 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// EventServer implements the gRPC EventService server
 type EventServer struct {
 	eventpb.UnimplementedEventServiceServer
 	eventService services.EventService
 }
 
+// NewEventServer creates a new EventServer instance
 func NewEventServer(eventService services.EventService) *EventServer {
 	return &EventServer{
 		eventService: eventService,
@@ -43,12 +45,12 @@ func getUserIDFromContext(ctx context.Context) (int64, error) {
 		tokenString = tokenString[7:]
 	}
 
-	userId, err := utils.ValidateToken(tokenString)
+	userID, err := utils.ValidateToken(tokenString)
 	if err != nil {
 		return 0, errors.New("invalid token")
 	}
 
-	return userId, nil
+	return userID, nil
 }
 
 // Helper function to convert model Event to protobuf Event
@@ -59,22 +61,11 @@ func convertToProtoEvent(e models.Event) *eventpb.Event {
 		Description: e.Description,
 		Location:    e.Location,
 		DateTime:    timestamppb.New(e.DateTime),
-		UserId:      e.UserId,
+		UserId:      e.UserID,
 	}
 }
 
-// Helper function to convert protobuf Event to model Event
-func convertFromProtoEvent(pe *eventpb.Event) models.Event {
-	return models.Event{
-		ID:          pe.Id,
-		Name:        pe.Name,
-		Description: pe.Description,
-		Location:    pe.Location,
-		DateTime:    pe.DateTime.AsTime(),
-		UserId:      pe.UserId,
-	}
-}
-
+// GetEvents retrieves all events via gRPC
 func (s *EventServer) GetEvents(ctx context.Context, req *eventpb.GetEventsRequest) (*eventpb.GetEventsResponse, error) {
 	events, err := s.eventService.GetAllEvents()
 	if err != nil {
@@ -91,6 +82,7 @@ func (s *EventServer) GetEvents(ctx context.Context, req *eventpb.GetEventsReque
 	}, nil
 }
 
+// GetEvent retrieves a specific event by ID via gRPC
 func (s *EventServer) GetEvent(ctx context.Context, req *eventpb.GetEventRequest) (*eventpb.GetEventResponse, error) {
 	event, err := s.eventService.GetEventByID(strconv.FormatInt(req.Id, 10))
 	if err != nil {
@@ -102,8 +94,9 @@ func (s *EventServer) GetEvent(ctx context.Context, req *eventpb.GetEventRequest
 	}, nil
 }
 
+// CreateEvent creates a new event via gRPC
 func (s *EventServer) CreateEvent(ctx context.Context, req *eventpb.CreateEventRequest) (*eventpb.CreateEventResponse, error) {
-	userId, err := getUserIDFromContext(ctx)
+	userID, err := getUserIDFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +106,7 @@ func (s *EventServer) CreateEvent(ctx context.Context, req *eventpb.CreateEventR
 		Description: req.Description,
 		Location:    req.Location,
 		DateTime:    req.DateTime.AsTime(),
-		UserId:      userId,
+		UserID:      userID,
 	}
 
 	createdEvent, err := s.eventService.CreateEvent(event)
@@ -126,8 +119,9 @@ func (s *EventServer) CreateEvent(ctx context.Context, req *eventpb.CreateEventR
 	}, nil
 }
 
+// UpdateEvent updates an existing event via gRPC
 func (s *EventServer) UpdateEvent(ctx context.Context, req *eventpb.UpdateEventRequest) (*eventpb.UpdateEventResponse, error) {
-	userId, err := getUserIDFromContext(ctx)
+	userID, err := getUserIDFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +131,7 @@ func (s *EventServer) UpdateEvent(ctx context.Context, req *eventpb.UpdateEventR
 	if err != nil {
 		return nil, err
 	}
-	if existingEvent.UserId != userId {
+	if existingEvent.UserID != userID {
 		return nil, errors.New("you do not have permission to update this event")
 	}
 
@@ -147,7 +141,7 @@ func (s *EventServer) UpdateEvent(ctx context.Context, req *eventpb.UpdateEventR
 		Description: req.Description,
 		Location:    req.Location,
 		DateTime:    req.DateTime.AsTime(),
-		UserId:      userId,
+		UserID:      userID,
 	}
 
 	if err := s.eventService.UpdateEvent(updatedEvent); err != nil {
@@ -159,8 +153,9 @@ func (s *EventServer) UpdateEvent(ctx context.Context, req *eventpb.UpdateEventR
 	}, nil
 }
 
+// DeleteEvent deletes an event via gRPC
 func (s *EventServer) DeleteEvent(ctx context.Context, req *eventpb.DeleteEventRequest) (*eventpb.DeleteEventResponse, error) {
-	userId, err := getUserIDFromContext(ctx)
+	userID, err := getUserIDFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +165,7 @@ func (s *EventServer) DeleteEvent(ctx context.Context, req *eventpb.DeleteEventR
 	if err != nil {
 		return nil, err
 	}
-	if event.UserId != userId {
+	if event.UserID != userID {
 		return nil, errors.New("you do not have permission to delete this event")
 	}
 
@@ -181,39 +176,42 @@ func (s *EventServer) DeleteEvent(ctx context.Context, req *eventpb.DeleteEventR
 	return &eventpb.DeleteEventResponse{}, nil
 }
 
+// RegisterForEvent registers a user for an event via gRPC
 func (s *EventServer) RegisterForEvent(ctx context.Context, req *eventpb.RegisterForEventRequest) (*eventpb.RegisterForEventResponse, error) {
-	userId, err := getUserIDFromContext(ctx)
+	userID, err := getUserIDFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := s.eventService.RegisterForEvent(userId, strconv.FormatInt(req.EventId, 10)); err != nil {
+	if err := s.eventService.RegisterForEvent(userID, strconv.FormatInt(req.EventId, 10)); err != nil {
 		return nil, err
 	}
 
 	return &eventpb.RegisterForEventResponse{}, nil
 }
 
+// CancelRegistration cancels a user's registration for an event via gRPC
 func (s *EventServer) CancelRegistration(ctx context.Context, req *eventpb.CancelRegistrationRequest) (*eventpb.CancelRegistrationResponse, error) {
-	userId, err := getUserIDFromContext(ctx)
+	userID, err := getUserIDFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := s.eventService.CancelRegistration(userId, strconv.FormatInt(req.EventId, 10)); err != nil {
+	if err := s.eventService.CancelRegistration(userID, strconv.FormatInt(req.EventId, 10)); err != nil {
 		return nil, err
 	}
 
 	return &eventpb.CancelRegistrationResponse{}, nil
 }
 
+// GetUserRegistrations retrieves all events a user is registered for via gRPC
 func (s *EventServer) GetUserRegistrations(ctx context.Context, req *eventpb.GetUserRegistrationsRequest) (*eventpb.GetUserRegistrationsResponse, error) {
-	userId, err := getUserIDFromContext(ctx)
+	userID, err := getUserIDFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	events, err := s.eventService.GetUserRegistrations(userId)
+	events, err := s.eventService.GetUserRegistrations(userID)
 	if err != nil {
 		return nil, err
 	}

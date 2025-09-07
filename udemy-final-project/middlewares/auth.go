@@ -7,6 +7,7 @@ import (
 	"github.com/gurkanindibay/udemy-rest-api/utils"
 )
 
+// Authenticate is a middleware that validates JWT tokens and sets user ID in context
 func Authenticate(context *gin.Context) {
 	// validate JWT token
 	tokenString := context.GetHeader("Authorization")
@@ -20,14 +21,14 @@ func Authenticate(context *gin.Context) {
 		tokenString = tokenString[7:]
 	}
 
-	userId, err := utils.ValidateToken(tokenString)
+	userID, err := utils.ValidateToken(tokenString)
 
 	if err != nil {
 		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
 	}
 
-	context.Set("userId", userId)
+	context.Set("userId", userID)
 	context.Next()
 
 }

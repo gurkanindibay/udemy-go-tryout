@@ -8,12 +8,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// User represents a user in the system
 type User struct {
 	ID       int64  `json:"id" gorm:"primaryKey;autoIncrement" example:"1"`
 	Email    string `json:"email" gorm:"unique;not null" binding:"required,email" example:"user@example.com"`
 	Password string `json:"password" gorm:"not null" binding:"required,min=6" example:"password123"`
 }
 
+// Save creates a new user in the database with hashed password
 func (u *User) Save() error {
 	db := db.GetDB()
 
@@ -34,6 +36,7 @@ func (u *User) Save() error {
 	return db.Create(u).Error
 }
 
+// GetUserByEmail retrieves a user by their email address
 func GetUserByEmail(email string) (*User, error) {
 	db := db.GetDB()
 
@@ -48,6 +51,7 @@ func GetUserByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
+// VerifyUserCredentials checks if the provided email and password match a user in the database
 func VerifyUserCredentials(email, password string) (*User, error) {
 	user, err := GetUserByEmail(email)
 	if err != nil {

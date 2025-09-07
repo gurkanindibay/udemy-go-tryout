@@ -59,7 +59,7 @@ func getEventByID(c *gin.Context) {
 // @Security BearerAuth
 func createEvent(c *gin.Context) {
 
-	userId := c.GetInt64("userId")
+	userID := c.GetInt64("userId")
 
 	var request models.CreateEventRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -72,7 +72,7 @@ func createEvent(c *gin.Context) {
 		Description: request.Description,
 		Location:    request.Location,
 		DateTime:    request.DateTime,
-		UserId:      userId,
+		UserID:      userID,
 	}
 
 	createdEvent, err := eventService.CreateEvent(newEvent)
@@ -100,7 +100,7 @@ func createEvent(c *gin.Context) {
 // @Security BearerAuth
 func updateEvent(c *gin.Context) {
 	id := c.Param("id")
-	userId := c.GetInt64("userId")
+	userID := c.GetInt64("userId")
 
 	// Check if the event exists and belongs to the user
 	event, err := eventService.GetEventByID(id)
@@ -108,7 +108,7 @@ func updateEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if event.UserId != userId {
+	if event.UserID != userID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You do not have permission to update this event"})
 		return
 	}
@@ -131,7 +131,7 @@ func updateEvent(c *gin.Context) {
 		Description: request.Description,
 		Location:    request.Location,
 		DateTime:    request.DateTime,
-		UserId:      userId,
+		UserID:      userID,
 	}
 	if err := eventService.UpdateEvent(updatedEvent); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -155,7 +155,7 @@ func updateEvent(c *gin.Context) {
 func deleteEvent(c *gin.Context) {
 	id := c.Param("id")
 
-	userId := c.GetInt64("userId")
+	userID := c.GetInt64("userId")
 
 	// Check if the event exists and belongs to the user
 	event, err := eventService.GetEventByID(id)
@@ -163,7 +163,7 @@ func deleteEvent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if event.UserId != userId {
+	if event.UserID != userID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "You do not have permission to delete this event"})
 		return
 	}

@@ -66,7 +66,9 @@ func startRESTServer() {
 
 	routes.SetupRoutes(server)
 	log.Println("REST server starting on :8080")
-	server.Run(":8080")
+	if err := server.Run(":8080"); err != nil {
+		log.Fatalf("Failed to start REST server: %v", err)
+	}
 }
 
 func startGRPCServer() {

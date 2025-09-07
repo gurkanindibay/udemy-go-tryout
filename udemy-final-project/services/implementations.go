@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/gurkanindibay/udemy-rest-api/kafka"
@@ -12,6 +13,7 @@ import (
 // userServiceImpl implements UserService
 type userServiceImpl struct{}
 
+// NewUserService creates a new instance of UserService
 func NewUserService() UserService {
 	return &userServiceImpl{}
 }
@@ -38,6 +40,7 @@ type eventServiceImpl struct {
 	producer *kafka.Producer
 }
 
+// NewEventService creates a new instance of EventService with Kafka producer
 func NewEventService() EventService {
 	producer, err := kafka.NewProducer()
 	if err != nil {
@@ -63,7 +66,14 @@ func (s *eventServiceImpl) CreateEvent(event models.Event) (*models.Event, error
 	}
 	// Publish to Kafka
 	if s.producer != nil {
-		go s.producer.PublishEvent("created", strconv.FormatInt(event.ID, 10), event)
+		go func() {
+			err := s.producer.PublishEvent("created", strconv.FormatInt(event.ID, 10), event)
+			if err != nil {
+				// Log error but don't fail the operation
+				// In production, you might want to use a proper logger
+				fmt.Printf("Failed to publish event to Kafka: %v\n", err)
+			}
+		}()
 	}
 	return &event, nil
 }
@@ -71,7 +81,12 @@ func (s *eventServiceImpl) CreateEvent(event models.Event) (*models.Event, error
 func (s *eventServiceImpl) UpdateEvent(event models.Event) error {
 	err := event.Update()
 	if err == nil && s.producer != nil {
-		go s.producer.PublishEvent("updated", strconv.FormatInt(event.ID, 10), event)
+		go func() {
+			err := s.producer.PublishEvent("updated", strconv.FormatInt(event.ID, 10), event)
+			if err != nil {
+				fmt.Printf("Failed to publish event to Kafka: %v\n", err)
+			}
+		}()
 	}
 	return err
 }
@@ -86,7 +101,12 @@ func (s *eventServiceImpl) DeleteEvent(id string) error {
 	}
 	err = models.DeleteEvent(id)
 	if err == nil && s.producer != nil {
-		go s.producer.PublishEvent("deleted", strconv.FormatInt(event.ID, 10), *event)
+		go func() {
+			err := s.producer.PublishEvent("deleted", strconv.FormatInt(event.ID, 10), *event)
+			if err != nil {
+				fmt.Printf("Failed to publish event to Kafka: %v\n", err)
+			}
+		}()
 	}
 	return err
 }
@@ -114,6 +134,7 @@ func (s *eventServiceImpl) GetUserRegistrations(userID int64) ([]models.Event, e
 // authServiceImpl implements AuthService
 type authServiceImpl struct{}
 
+// NewAuthService creates a new instance of AuthService
 func NewAuthService() AuthService {
 	return &authServiceImpl{}
 }

@@ -8,11 +8,13 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// Consumer handles consuming messages from Kafka
 type Consumer struct {
 	reader *kafka.Reader
 	topic  string
 }
 
+// NewConsumer creates a new Kafka consumer instance
 func NewConsumer() (*Consumer, error) {
 	brokers := []string{getEnv("KAFKA_BROKERS", "localhost:9092")}
 	topic := "events"
@@ -31,6 +33,7 @@ func NewConsumer() (*Consumer, error) {
 	}, nil
 }
 
+// StartConsuming begins consuming messages from Kafka in a continuous loop
 func (c *Consumer) StartConsuming() {
 	log.Println("Kafka consumer started, waiting for messages...")
 
@@ -59,6 +62,7 @@ func (c *Consumer) processMessage(msg *kafka.Message) {
 	// For this demo, we'll just log it.
 }
 
+// Close closes the Kafka consumer and releases resources
 func (c *Consumer) Close() error {
 	return c.reader.Close()
 }

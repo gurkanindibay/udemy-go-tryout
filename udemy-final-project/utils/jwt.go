@@ -1,24 +1,26 @@
 package utils
 
-
 import (
-	"github.com/golang-jwt/jwt/v5"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var jwtKey = []byte("supersecretkey")
 
-func GenerateToken(email string, userId int64) (string, error) {
+// GenerateToken creates a JWT token for the given email and user ID
+func GenerateToken(email string, userID int64) (string, error) {
 	// Implementation for generating JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": email,
-		"exp":   time.Now().Add(time.Hour * 2).Unix(),
-		"userId":   userId,
+		"email":  email,
+		"exp":    time.Now().Add(time.Hour * 2).Unix(),
+		"userId": userID,
 	})
 
 	return token.SignedString(jwtKey)
 }
 
+// ValidateToken verifies a JWT token and returns the user ID if valid
 func ValidateToken(tokenString string) (int64, error) {
 	// Implementation for validating JWT token and returning user ID
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {

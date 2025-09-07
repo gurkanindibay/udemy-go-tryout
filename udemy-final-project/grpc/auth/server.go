@@ -9,12 +9,14 @@ import (
 	"github.com/gurkanindibay/udemy-rest-api/services"
 )
 
+// AuthServer implements the gRPC AuthService server
 type AuthServer struct {
 	authpb.UnimplementedAuthServiceServer
 	userService services.UserService
 	authService services.AuthService
 }
 
+// NewAuthServer creates a new AuthServer instance
 func NewAuthServer(userService services.UserService, authService services.AuthService) *AuthServer {
 	return &AuthServer{
 		userService: userService,
@@ -22,6 +24,7 @@ func NewAuthServer(userService services.UserService, authService services.AuthSe
 	}
 }
 
+// Register handles user registration via gRPC
 func (s *AuthServer) Register(ctx context.Context, req *authpb.RegisterRequest) (*authpb.RegisterResponse, error) {
 	user, err := s.userService.Register(req.Email, req.Password)
 	if err != nil {
@@ -37,6 +40,7 @@ func (s *AuthServer) Register(ctx context.Context, req *authpb.RegisterRequest) 
 	}, nil
 }
 
+// Login handles user authentication via gRPC
 func (s *AuthServer) Login(ctx context.Context, req *authpb.LoginRequest) (*authpb.LoginResponse, error) {
 	log.Printf("Attempting login for user: %s", req.Email)
 

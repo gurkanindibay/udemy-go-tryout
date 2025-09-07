@@ -14,12 +14,14 @@ var (
 	authService  services.AuthService
 )
 
+// InitServices initializes the service dependencies for the routes
 func InitServices(u services.UserService, e services.EventService, a services.AuthService) {
 	userService = u
 	eventService = e
 	authService = a
 }
 
+// SetupRoutes configures all the API routes for the application
 func SetupRoutes(server *gin.Engine) {
 	// Swagger UI route
 	server.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

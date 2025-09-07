@@ -9,16 +9,19 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// Producer handles publishing messages to Kafka
 type Producer struct {
 	writer *kafka.Writer
 	topic  string
 }
 
+// EventMessage represents the structure of messages sent to Kafka
 type EventMessage struct {
 	Action string      `json:"action"`
 	Event  interface{} `json:"event"`
 }
 
+// NewProducer creates a new Kafka producer instance
 func NewProducer() (*Producer, error) {
 	brokers := []string{getEnv("KAFKA_BROKERS", "localhost:9092")}
 	topic := "events"
@@ -35,6 +38,7 @@ func NewProducer() (*Producer, error) {
 	}, nil
 }
 
+// PublishEvent sends an event message to Kafka with the specified action and event ID
 func (p *Producer) PublishEvent(action string, eventID string, event interface{}) error {
 	message := EventMessage{
 		Action: action,
@@ -63,6 +67,7 @@ func (p *Producer) PublishEvent(action string, eventID string, event interface{}
 	return nil
 }
 
+// Close closes the Kafka producer and releases resources
 func (p *Producer) Close() error {
 	return p.writer.Close()
 }

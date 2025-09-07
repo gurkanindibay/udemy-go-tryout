@@ -20,10 +20,10 @@ import (
 // @Router /events/{id}/register [post]
 // @Security BearerAuth
 func registerForEvent(c *gin.Context) {
-	eventId := c.Param("id")
-	userId := c.GetInt64("userId")
+	eventID := c.Param("id")
+	userID := c.GetInt64("userId")
 
-	event, err := eventService.GetEventByID(eventId)
+	event, err := eventService.GetEventByID(eventID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -33,7 +33,7 @@ func registerForEvent(c *gin.Context) {
 		return
 	}
 
-	if err := eventService.RegisterForEvent(userId, eventId); err != nil {
+	if err := eventService.RegisterForEvent(userID, eventID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -53,14 +53,14 @@ func registerForEvent(c *gin.Context) {
 // @Router /users/{id}/registrations [get]
 // @Security BearerAuth
 func getUserRegistrations(c *gin.Context) {
-	userIdParam := c.Param("id")
-	userId, err := strconv.ParseInt(userIdParam, 10, 64)
+	userIDParam := c.Param("id")
+	userID, err := strconv.ParseInt(userIDParam, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
-	registrations, err := eventService.GetUserRegistrations(userId)
+	registrations, err := eventService.GetUserRegistrations(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -81,10 +81,10 @@ func getUserRegistrations(c *gin.Context) {
 // @Router /events/{id}/register [delete]
 // @Security BearerAuth
 func cancelRegistration(c *gin.Context) {
-	eventId := c.Param("id")
-	userId := c.GetInt64("userId")
+	eventID := c.Param("id")
+	userID := c.GetInt64("userId")
 
-	event, err := eventService.GetEventByID(eventId)
+	event, err := eventService.GetEventByID(eventID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -94,7 +94,7 @@ func cancelRegistration(c *gin.Context) {
 		return
 	}
 
-	if err := eventService.CancelRegistration(userId, eventId); err != nil {
+	if err := eventService.CancelRegistration(userID, eventID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

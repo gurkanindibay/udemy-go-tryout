@@ -23,18 +23,20 @@ type Event struct {
 	Description string    `gorm:"not null"`
 	Location    string    `gorm:"not null"`
 	DateTime    time.Time `gorm:"not null"`
-	UserId      int64     `gorm:"not null"`
+	UserID      int64     `gorm:"not null"`
 }
 
 // Registration model for migration
 type Registration struct {
 	ID      int64 `gorm:"primaryKey;autoIncrement"`
-	UserId  int64 `gorm:"not null"`
-	EventId int64 `gorm:"not null"`
+	UserID  int64 `gorm:"not null"`
+	EventID int64 `gorm:"not null"`
 }
 
+// DB is the global database connection instance
 var DB *gorm.DB
 
+// InitDB initializes the database connection and performs auto-migration
 func InitDB() {
 	var err error
 	dbHost := getEnv("DB_HOST", "localhost")
@@ -65,6 +67,7 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
+// GetDB returns the global database connection instance
 func GetDB() *gorm.DB {
 	return DB
 }
