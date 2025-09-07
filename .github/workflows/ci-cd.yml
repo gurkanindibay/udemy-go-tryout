@@ -92,7 +92,7 @@ jobs:
   build-and-test-docker:
     name: Build and Test Docker Image
     runs-on: ubuntu-latest
-    needs: [test, security-scan]
+    needs: [test]
     permissions:
       contents: read
       packages: write
