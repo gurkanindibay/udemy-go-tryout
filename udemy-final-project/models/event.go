@@ -1,3 +1,4 @@
+// Package models provides data models and structures for the application.
 package models
 
 import (

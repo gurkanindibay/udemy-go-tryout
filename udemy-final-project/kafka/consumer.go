@@ -1,3 +1,4 @@
+// Package kafka provides Kafka consumer functionality for event processing.
 package kafka
 
 import (

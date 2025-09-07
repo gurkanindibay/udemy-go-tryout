@@ -1,3 +1,4 @@
+// Package di provides dependency injection container functionality.
 package di
 
 import (

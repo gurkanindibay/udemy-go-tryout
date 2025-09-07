@@ -1,3 +1,4 @@
+// Package routes provides HTTP route handlers for the REST API.
 package routes
 
 import (

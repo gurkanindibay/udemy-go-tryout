@@ -1,3 +1,4 @@
+// Package main provides a gRPC client for testing the event management API.
 package main
 
 import (
@@ -19,7 +20,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			log.Printf("Error closing connection: %v", err)
+		}
+	}()
 
 	// Create clients
 	authClient := auth.NewAuthServiceClient(conn)

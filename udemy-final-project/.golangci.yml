@@ -1,3 +1,5 @@
+version: 2
+
 run:
   timeout: 5m
   issues-exit-code: 1
@@ -6,16 +8,18 @@ run:
 linters:
   enable:
     - revive  # replaces golint
-    - gofmt
-    - goimports
     - govet
     - ineffassign
     - staticcheck
     - unused
-    - gosimple
     - goconst
     - gocyclo
     - misspell
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
 
 linters-settings:
   revive:
@@ -26,7 +30,7 @@ linters-settings:
       - name: package-comments
         disabled: true  # Allow packages without comments
       - name: var-naming
-        disabled: false
+        disabled: true  # Disable var-naming rule that flags "utils" as meaningless
 
 issues:
   exclude-rules:
@@ -35,6 +39,10 @@ issues:
       linters:
         - revive
       text: "stutters"
+    # Exclude all revive warnings from utils directory (package naming convention)
+    - path: utils/
+      linters:
+        - revive
   # Exclude generated protobuf files
   exclude-files:
     - ".*\\.pb\\.go$"

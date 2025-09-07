@@ -1,3 +1,4 @@
+// Package main provides the entry point for the event management API server.
 package main
 
 import (
@@ -111,7 +112,11 @@ func startKafkaConsumer() {
 		log.Printf("Failed to create Kafka consumer: %v", err)
 		return
 	}
-	defer consumer.Close()
+	defer func() {
+		if err := consumer.Close(); err != nil {
+			log.Printf("Error closing Kafka consumer: %v", err)
+		}
+	}()
 
 	consumer.StartConsuming()
 }

@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/gurkanindibay/udemy-rest-api/db"
-	"github.com/gurkanindibay/udemy-rest-api/utils"
+	"github.com/gurkanindibay/udemy-rest-api/security"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +24,7 @@ func (u *User) Save() error {
 	log.Printf("User password: %s", u.Password)
 
 	// Hash the password before storing it
-	hashedPassword, err := utils.HashPassword(u.Password)
+	hashedPassword, err := security.HashPassword(u.Password)
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func VerifyUserCredentials(email, password string) (*User, error) {
 	}
 
 	// Compare the provided password with the stored hashed password
-	if err := utils.CheckPasswordHash(password, user.Password); err != nil {
+	if err := security.CheckPasswordHash(password, user.Password); err != nil {
 		return nil, nil // Invalid password
 	}
 

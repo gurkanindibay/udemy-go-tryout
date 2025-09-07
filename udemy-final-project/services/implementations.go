@@ -1,3 +1,4 @@
+// Package services provides business logic implementations for the application.
 package services
 
 import (
@@ -7,7 +8,7 @@ import (
 
 	"github.com/gurkanindibay/udemy-rest-api/kafka"
 	"github.com/gurkanindibay/udemy-rest-api/models"
-	"github.com/gurkanindibay/udemy-rest-api/utils"
+	"github.com/gurkanindibay/udemy-rest-api/security"
 )
 
 // userServiceImpl implements UserService
@@ -140,10 +141,10 @@ func NewAuthService() AuthService {
 }
 
 func (s *authServiceImpl) GenerateToken(email string, userID int64) (string, error) {
-	return utils.GenerateToken(email, userID)
+	return security.GenerateToken(email, userID)
 }
 
-func (s *authServiceImpl) ValidateToken(tokenString string) (*models.User, error) {
-	// This would need to be implemented in utils
+func (s *authServiceImpl) ValidateToken(_ string) (*models.User, error) {
+	// Future enhancement: add method to fetch user from token if required.
 	return nil, errors.New("not implemented")
 }
